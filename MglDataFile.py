@@ -1,3 +1,4 @@
+import datetime
 import struct
 from typing import BinaryIO
 
@@ -32,8 +33,48 @@ Whitespace between formats is ignored.
 The variable struct.error is an exception raised on errors.
 """
 
+
 class DataError(Exception):
     pass
+
+
+class EOF(Exception):
+    pass
+
+
+class Timestamp(object):
+    mglTimestamp = None
+    datetime = None
+
+    def __init__(self, mglTimestamp):
+        self.mglTimestamp = mglTimestamp
+        self.calculateDatetime()
+
+    def calculateDatetime(self):
+        mglEpoch = datetime.datetime(2000, 1, 1, 0, 0, 0)
+        sinceEpoch = datetime.timedelta(seconds=self.mglTimestamp)
+        self.datetime = mglEpoch + sinceEpoch
+
+    def __str__(self):
+        return str(self.datetime)
+
+    def __le__(self, other):
+        return self.datetime <= other
+
+    def __lt__(self, other):
+        return self.datetime < other
+
+    def __eq__(self, other):
+        return self.datetime == other
+
+    def __ne__(self, other):
+        return self.datetime != other
+
+    def __gt__(self, other):
+        return self.datetime > other
+
+    def __ge__(self, other):
+        return self.datetime >= other
 
 
 class MglRecord(object):
@@ -47,6 +88,7 @@ class MglRecord(object):
 
     checksum = None
     dle = None
+    messageCount = None
     messageLength = None
     messageType = None
     stx = None
@@ -54,39 +96,64 @@ class MglRecord(object):
     HEADERSIZE = 8
     PRIVATEHEADERSIZE = 8
 
-    def __init__(self, filePointer):
-        self.filePointer = filePointer
+    def __init__(self, fp):
+        self.filePointer = fp
 
     def readRecord(self):
         self.readTimestamp()
         self.readDataStream()
+        self.parseHeader()
 
     def readDataStream(self):
-        self.dataStream = self.filePointer.read(508)
+        self.dataStream = self.read(508)
 
     def readTimestamp(self):
-        t = self.filePointer.read(4)
-        self.timeStamp = struct.unpack('I', t)
+        buffer = self.read(4)
+        (ts,) = struct.unpack('I', buffer)
+        self.timeStamp = Timestamp(ts)
 
     def readChecksum(self):
-        rawChecksum = self.filePointer.read(4)
-        self.checksum = struct.unpack('I', rawChecksum)
+        buffer = self.read(4)
+        (self.checksum,) = struct.unpack('I', buffer)
 
-    def readHeader(self):
-        self.rawHeader = self.filePointer.read(8)
-        (self.dle, self.stx, self.messageLength, self.messageType) = struct.unpack('BBBxBxxx', self.rawHeader)
-        if 106 != self.dle or 48 != self.stx:
-            raise DataError()
+    def parseHeader(self):
+        (self.dle, self.stx, self.messageLength, self.messageType, self.messageCount) = \
+            struct.unpack('BBBxBxBx', self.dataStream[0:8])
 
     def readMessageData(self):
-        self.rawMessageWithChecksum = self.filePointer.read(self.messageLength + self.PRIVATEHEADERSIZE)
+        self.rawMessageWithChecksum = self.read(self.messageLength + self.PRIVATEHEADERSIZE)
+
+    def read(self, length):
+        buffer = self.filePointer.read(length)
+        if 0 == len(buffer):
+            raise EOF()
+        return buffer
 
 
 if '__main__' == __name__:
-    with open('data/IEFISBB.DAT', 'rb') as filePointer:
-        recordNumber = 0
-        while True:
-            m = MglRecord(filePointer)
-            m.readRecord()
-            print(recordNumber, m.timeStamp)
-            recordNumber += 1
+    minDate = datetime.datetime(2015, 3, 16)
+    maxDate = datetime.datetime(2021, 1, 1)
+
+    first = maxDate
+    last = minDate
+
+    try:
+        with open('data/IEFISBB.DAT', 'rb') as filePointer:
+            recordNumber = 0
+            while True:
+                m = MglRecord(filePointer)
+                m.readRecord()
+                if minDate <= m.timeStamp <= maxDate:
+                    print('%4d   %s   type=%d' % (recordNumber, m.timeStamp, m.messageType))
+                    recordNumber += 1
+
+                    if m.timeStamp < first:
+                        first = m.timeStamp
+
+                    if m.timeStamp > last:
+                        last = m.timeStamp
+    except EOF as e:
+        print('--eof--')
+
+    print('first =', first)
+    print('last  =', last)
