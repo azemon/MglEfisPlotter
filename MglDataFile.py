@@ -46,14 +46,17 @@ class Timestamp(object):
     mglTimestamp = None
     datetime = None
 
+    mglEpoch = None
+
     def __init__(self, mglTimestamp):
+        # self.mglEpoch = datetime.datetime(2003, 11, 30, 1, 6, 49)
+        self.mglEpoch = datetime.datetime(2000, 1, 1, 0, 0, 0)
         self.mglTimestamp = mglTimestamp
         self.calculateDatetime()
 
     def calculateDatetime(self):
-        mglEpoch = datetime.datetime(2000, 1, 1, 0, 0, 0)
         sinceEpoch = datetime.timedelta(seconds=self.mglTimestamp)
-        self.datetime = mglEpoch + sinceEpoch
+        self.datetime = self.mglEpoch + sinceEpoch
 
     def __str__(self):
         return str(self.datetime)
@@ -80,11 +83,10 @@ class Timestamp(object):
 class MglRecord(object):
     filePointer: BinaryIO
 
-    timeStamp = None
-    dataStream = None
+    rawRecord = None
+    rawDatastream = None
 
-    rawHeader = None
-    rawMessageWithChecksum = None
+    timeStamp = None
 
     checksum = None
     dle = None
@@ -95,21 +97,22 @@ class MglRecord(object):
 
     HEADERSIZE = 8
     PRIVATEHEADERSIZE = 8
+    RECORDSIZE = 512
 
     def __init__(self, fp):
         self.filePointer = fp
 
     def readRecord(self):
+        self.rawRecord = self.read(self.RECORDSIZE)
         self.readTimestamp()
         self.readDataStream()
         self.parseHeader()
 
     def readDataStream(self):
-        self.dataStream = self.read(508)
+        self.rawDatastream = self.rawRecord[4:]
 
     def readTimestamp(self):
-        buffer = self.read(4)
-        (ts,) = struct.unpack('I', buffer)
+        (ts,) = struct.unpack_from('I', self.rawRecord, 0)
         self.timeStamp = Timestamp(ts)
 
     def readChecksum(self):
@@ -118,10 +121,11 @@ class MglRecord(object):
 
     def parseHeader(self):
         (self.dle, self.stx, self.messageLength, self.messageType, self.messageCount) = \
-            struct.unpack('BBBxBxBx', self.dataStream[0:8])
+            struct.unpack('BBBxBxBx', self.rawDatastream[0:self.HEADERSIZE])
 
     def readMessageData(self):
-        self.rawMessageWithChecksum = self.read(self.messageLength + self.PRIVATEHEADERSIZE)
+        length = self.messageLength + self.PRIVATEHEADERSIZE
+        self.rawMessageWithChecksum = self.rawDatastream[8:length]
 
     def read(self, length):
         buffer = self.filePointer.read(length)
@@ -131,7 +135,7 @@ class MglRecord(object):
 
 
 if '__main__' == __name__:
-    minDate = datetime.datetime(2015, 3, 16)
+    minDate = datetime.datetime(2015, 3, 17)
     maxDate = datetime.datetime(2021, 1, 1)
 
     first = maxDate
@@ -140,20 +144,24 @@ if '__main__' == __name__:
     try:
         with open('data/IEFISBB.DAT', 'rb') as filePointer:
             recordNumber = 0
+            print('%4s    %9s   %-19s   %4s    dle    stx    len' % (' Rec', 'Timestamp', 'DateTime', 'Type'))
             while True:
                 m = MglRecord(filePointer)
                 m.readRecord()
-                if minDate <= m.timeStamp <= maxDate:
-                    print('%4d   %s   type=%d' % (recordNumber, m.timeStamp, m.messageType))
-                    recordNumber += 1
+                recordNumber += 1
+
+                if (minDate <= m.timeStamp <= maxDate) or recordNumber <= 10:
+                    print('%4d    %9d   %19s   %4d    %3d    %3d    %3d' % (recordNumber, m.timeStamp.mglTimestamp, m.timeStamp, m.messageType, m.dle, m.stx, m.messageLength))
 
                     if m.timeStamp < first:
                         first = m.timeStamp
 
                     if m.timeStamp > last:
                         last = m.timeStamp
+
     except EOF as e:
-        print('--eof--')
+        print()
 
     print('first =', first)
     print('last  =', last)
+    print('elapsed =', last.datetime - first.datetime)
