@@ -43,10 +43,17 @@ class NotAMessage(Exception):
 
 
 class MessageData(object):
-    pass
+    MESSAGETYPE = None
+
+    rawData: bytearray
+
+    def __init__(self, buffer: bytearray):
+        self.rawData = buffer
 
 
 class PrimaryFlight(MessageData):
+    MESSAGETYPE = 1
+
     pAltitude: int
     bAltitude: int
     asi: int
@@ -74,6 +81,7 @@ class PrimaryFlight(MessageData):
     exception: Exception
 
     def __init__(self, buffer: bytearray):
+        super().__init__(buffer)
         (self.pAltitude, self.bAltitude, # ii
          self.asi, self.tas, # HH
          self.aoa, self.vsi, # hh
@@ -89,10 +97,13 @@ class PrimaryFlight(MessageData):
         try:
             self.dateTime = datetime.datetime(self.year + 2000, self.month, self.date, self.hour, self.minute, self.second)
         except ValueError as e:
+            self.dateTime = None
             self.exception = e
 
 
 class Gps(MessageData):
+    MESSAGETYPE = 2
+
     latitude: int
     longitude: int
     gpsAltitude: int
@@ -118,6 +129,7 @@ class Gps(MessageData):
     groundSpeedKnots: float
 
     def __init__(self, buffer: bytearray):
+        super().__init__(buffer)
         (self.latitude, self.longitude, # ii
          self.gpsAltitude, self.agl, # ii
          self.northVelocity, self.eastVelocity, self.downVelocity, # iii
@@ -132,6 +144,41 @@ class Gps(MessageData):
         self.groundSpeedKnots = self.groundSpeed * 0.1944
 
 
+class Attitude(MessageData):
+    MESSAGETYPE = 3
+
+    headingMag: int
+    pitchAngle: int
+    bankAngle: int
+    yawAngle: int
+    turnRate: int
+    slip: int
+    gForce: int
+    lrForce: int
+    frForce: int
+    bankRate: int
+    pitchRate: int
+    yawRate: int
+    sensorFlags: int
+
+    pitchAngleDegrees: float
+    bankAngleDegrees: float
+    yawAngleDegrees: float
+
+    def __init__(self, buffer: bytearray):
+        super().__init__(buffer)
+        (self.headingMag, # H
+         self.pitchAngle, self.bankAngle, self.yawAngle, # hhh
+         self.turnRate, self.slip, # hh
+         self.gForce, self.lrForce, self.frForce, # hhh
+         self.bankRate, self.pitchRate, self.yawRate, # hhh
+         self.sensorFlags, # b
+         ) = struct.unpack_from('H hhh hh hhh hhh b xxx', buffer)
+
+        self.pitchAngleDegrees = self.pitchAngle / 10
+        self.bankAngleDegrees = self.bankAngle / 10
+        self.yawAngleDegrees = self.yawAngle / 10
+
 
 class Message(object):
     totalBytes: int
@@ -140,7 +187,7 @@ class Message(object):
     count: int
     version: int
     data: bytearray
-    checksun: int
+    checksum: int
 
     messageData: MessageData
 
@@ -151,7 +198,8 @@ class Message(object):
             raise NotAMessage()
         self.totalBytes = 4
 
-        (self.type, self.rate, self.count, self.version) = struct.unpack_from('BBBB', buffer, self.totalBytes)
+        (self.type, self.rate, self.count, self.version) = \
+            struct.unpack_from('BBBB', buffer, self.totalBytes)
         self.totalBytes += 4
 
         length += 8
@@ -162,13 +210,22 @@ class Message(object):
         self.totalBytes += length + 4
 
         self.setMessageData()
-        return
 
     def setMessageData(self):
-        if 1 == self.type:
+        if PrimaryFlight.MESSAGETYPE == self.type:
             self.messageData = PrimaryFlight(self.data)
-        elif 2 == self.type:
+        elif Gps.MESSAGETYPE == self.type:
             self.messageData = Gps(self.data)
+        elif Attitude.MESSAGETYPE == self.type:
+            self.messageData = Attitude(self.data)
+        else:
+            self.messageData = MessageData(self.data)
+
+    def __str__(self):
+        base = 'Message type {type}'.format(type=self.type)
+        if isinstance(self.messageData, PrimaryFlight):
+            base += ' at ' + str(self.messageData.dateTime)
+        return base
 
 
 class Flight(object):
@@ -200,9 +257,7 @@ class Flight(object):
         return
 
     def __str__(self):
-        return 'Flight from {earliest} to {latest} with {bytes} bytes'.format(earliest=self.earliestTimestamp,
-                                                                              latest=self.latestTimestamp,
-                                                                              bytes=len(self.byteStream))
+        return 'Flight from {earliest} with {count} messages'.format(earliest=self.earliestTimestamp, count=len(self.messages))
 
 
 class Packet(object):
@@ -264,6 +319,11 @@ if '__main__' == __name__:
     print(packetStream.flights)
 
     for flight in packetStream.flights:
-        flight.analyze()
-        print(flight)
-        print(flight.messages)
+        try:
+            flight.analyze()
+        except Exception as e:
+            print(e)
+        finally:
+            print(flight)
+            for message in flight.messages:
+                print('  ', message)
