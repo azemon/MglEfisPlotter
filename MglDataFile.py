@@ -66,6 +66,12 @@ class MessageData(object):
     def __init__(self, buffer: bytearray):
         self.rawData = buffer
 
+    def cToF(self, c: float) -> float:
+        return (c * 9 / 5) + 32
+
+    def millibarsToHg(self, m: float) -> float:
+        return m / 33.864 / 10
+
 
 class PrimaryFlight(MessageData):
     MESSAGETYPE = 1
@@ -108,8 +114,8 @@ class PrimaryFlight(MessageData):
          self.ftHour, self.ftMin, # bb
          ) = struct.unpack('ii HH hh HH hb B bbbbbb bb', buffer)
 
-        self.baroHg = self.baro / 33.864 / 10
-        self.oatF = (self.oat + 40) * 9 / 5 - 40
+        self.baroHg = self.millibarsToHg(self.baro)
+        self.oatF = self.cToF(self.oat)
         try:
             self.dateTime = datetime.datetime(self.year + 2000, self.month, self.date, self.hour, self.minute, self.second)
         except ValueError as e:
@@ -196,6 +202,78 @@ class Attitude(MessageData):
         self.yawAngleDegrees = self.yawAngle / 10
 
 
+class EngineData(MessageData):
+    MESSAGETYPE = 10
+
+    engineNumber: int
+    engineType: int
+
+    numberOfEgt: int
+    numberOfCht: int
+    rpm: int
+    pulse: int
+    oilPressure1: int
+    oilPressure2: int
+    fuelPressure: int
+    coolantTemperature: int
+    oilTemperature1: int
+    oilTemperature2: int
+    auxTemperature1: int
+    auxTemperature2: int
+    auxTemperature3: int
+    auxTemperature4: int
+    fuelFlow: int
+    auxFlow: int
+    manifoldPressure: int
+    boostPressure: int
+    inletTemperature: int
+    ambientPressure: int
+    egt: List[int]
+    cht: List[int]
+
+    def __init__(self, buffer: bytearray):
+        super().__init__(buffer)
+        format = 'bb bb HH HHH h hh hhhh HH HH hH ' # 40 bytes
+        bufferLen = len(buffer)
+        (self.engineNumber, self.engineType, # bb
+         self.numberOfEgt, self.numberOfCht, # bb
+         self.rpm, self.pulse, # HH
+         self.oilPressure1, self.oilPressure2, self.fuelPressure, # HHH
+         self.coolantTemperature, # h
+         self.oilTemperature1, self.oilTemperature2, # hh
+         self.auxTemperature1, self.auxTemperature2, self.auxTemperature3, self.auxTemperature4, # hhhh
+         self.fuelFlow, self.auxFlow, # HH
+         self.manifoldPressure, self.boostPressure, # HH
+         self.inletTemperature, self.ambientPressure, # hH
+         ) = struct.unpack_from(format, buffer)
+
+        format = 'h' * self.numberOfEgt + 'h' * self.numberOfCht
+        egtChtTemp = struct.unpack_from(format, buffer, 40)
+        self.egt = [egtChtTemp[i] for i in range(0, self.numberOfEgt * 2, 2)]
+        self.cht = [egtChtTemp[i] for i in range(1, self.numberOfCht * 2 + 1, 2)]
+
+        self.convertUnits()
+
+        return
+
+    def convertUnits(self):
+        self.coolantTemperature = self.cToF(self.coolantTemperature)
+        self.oilTemperature1 = self.cToF(self.oilTemperature1)
+        self.oilTemperature2 = self.cToF(self.oilTemperature2)
+        self.auxTemperature1 = self.cToF(self.auxTemperature1)
+        self.auxTemperature2 = self.cToF(self.auxTemperature2)
+        self.auxTemperature3 = self.cToF(self.auxTemperature3)
+        self.auxTemperature4 = self.cToF(self.auxTemperature4)
+        self.inletTemperature = self.cToF(self.inletTemperature)
+
+        self.manifoldPressure = self.millibarsToHg(self.manifoldPressure)
+
+        for i in range(0, len(self.egt)):
+            self.egt[i] = self.cToF(self.egt[i])
+        for i in range(0, len(self.cht)):
+            self.cht[i] = self.cToF(self.cht[i])
+
+
 class Message(object):
     totalBytes: int
     type: int
@@ -239,6 +317,8 @@ class Message(object):
             self.messageData = Gps(self.data)
         elif Attitude.MESSAGETYPE == self.type:
             self.messageData = Attitude(self.data)
+        elif EngineData.MESSAGETYPE == self.type:
+            self.messageData = EngineData(self.data)
         else:
             self.messageData = MessageData(self.data)
 
@@ -253,12 +333,16 @@ class Message(object):
         base = 'Message type {type}'.format(type=self.type)
         if isinstance(self.messageData, PrimaryFlight):
             base += ' at ' + str(self.messageData.dateTime)
+        elif isinstance(self.messageData, EngineData):
+            base += ' EGT ' + str(self.messageData.egt)
+            base += ' CHT ' + str(self.messageData.cht)
         return base
 
 
 class Flight(object):
     earliestTimestamp: int
     latestTimestamp: int
+
     byteStream: bytearray
     messages: List[Message]
 
