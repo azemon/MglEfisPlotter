@@ -1,3 +1,4 @@
+import binascii
 import datetime
 import struct
 from typing import BinaryIO, List
@@ -35,11 +36,26 @@ The variable struct.error is an exception raised on errors.
 
 
 class NotPartOfFlightException(Exception):
-    pass
+    def __init__(self, m=''):
+        super().__init__('Not part of flight' + m)
 
 
 class NotAMessage(Exception):
-    pass
+    def __init__(self, m=''):
+        super().__init__('Not a message' + m)
+
+
+class CrcMismatch(NotAMessage):
+    totalBytes: int
+
+    def __init__(self, totalBytes: int, m=''):
+        self.totalBytes = totalBytes
+        super().__init__('CRC Mismatch' + m)
+
+
+class NoMoreMessages(Exception):
+    def __init__(self, m=''):
+        super().__init__('Not part of flight' + m)
 
 
 class MessageData(object):
@@ -188,10 +204,13 @@ class Message(object):
     version: int
     data: bytearray
     checksum: int
+    rawHeader: bytearray
 
     messageData: MessageData
 
     def __init__(self, buffer: bytearray):
+        self.rawHeader = buffer[:8]
+
         (dle, stx, length, lengthXor) = struct.unpack_from('BBBB', buffer)
         calculatedLength = lengthXor ^ 0xff
         if dle != 0x5 or stx != 0x2 or length != calculatedLength:
@@ -205,11 +224,13 @@ class Message(object):
         length += 8
         format = '{length}s I'.format(length=length)
         slice = buffer[self.totalBytes : self.totalBytes + length + 4]
-        sliceLen = len(slice)
         (self.data, self.checksum) = struct.unpack(format, slice)
         self.totalBytes += length + 4
 
         self.setMessageData()
+
+        self.verifyChecksum()
+
 
     def setMessageData(self):
         if PrimaryFlight.MESSAGETYPE == self.type:
@@ -220,6 +241,13 @@ class Message(object):
             self.messageData = Attitude(self.data)
         else:
             self.messageData = MessageData(self.data)
+
+    def verifyChecksum(self):
+        buffer = self.rawHeader[4:]
+        buffer.extend(self.messageData.rawData)
+        crc = binascii.crc32(buffer) # % (1 << 32) # convert to unsigned CRC32
+        if crc != self.checksum:
+            raise CrcMismatch(self.totalBytes)
 
     def __str__(self):
         base = 'Message type {type}'.format(type=self.type)
@@ -250,11 +278,27 @@ class Flight(object):
     def analyze(self):
         totalBytes = 0
         self.messages = []
+        try:
+            while totalBytes < len(self.byteStream):
+                totalBytes = self.findBeginningOfNextMessage(totalBytes)
+                try:
+                    message = Message(self.byteStream[totalBytes:])
+                    self.messages.append(message)
+                    messageTotalBytes = message.totalBytes
+                except CrcMismatch as e:
+                    messageTotalBytes = e.totalBytes
+                totalBytes += messageTotalBytes
+        except NoMoreMessages:
+            return
+
+    def findBeginningOfNextMessage(self, totalBytes: int) -> int:
         while totalBytes < len(self.byteStream):
-            message = Message(self.byteStream[totalBytes:])
-            self.messages.append(message)
-            totalBytes += message.totalBytes
-        return
+            (dle, stx, length, lengthXor) = struct.unpack_from('BBBB', self.byteStream[totalBytes : totalBytes+4])
+            calculatedLength = lengthXor ^ 0xff
+            if dle == 0x5 and stx == 0x2 and length == calculatedLength:
+                return totalBytes
+            totalBytes += 1
+        raise NoMoreMessages()
 
     def __str__(self):
         return 'Flight from {earliest} with {count} messages'.format(earliest=self.earliestTimestamp, count=len(self.messages))
@@ -276,11 +320,11 @@ class MglPacketStream(object):
 
     RECORDSIZE = 512
 
-    def __init__(self, fp: BinaryIO):
+    def __init__(self, fp: BinaryIO, minTimestamp: int = 0):
         self.filePointer = fp
         self.packets = []
         self.flights = []
-        self.readPackets()
+        self.readPackets(minTimestamp)
         self.createFlights()
 
     def createFlights(self):
@@ -296,34 +340,33 @@ class MglPacketStream(object):
                     flight = Flight(packet.timestamp, packet.buffer)
         self.flights.append(flight)
 
-    def readPackets(self):
+    def readPackets(self, minTimestamp: int):
         while True:
             buffer = self.filePointer.read(self.RECORDSIZE)
             if 0 == len(buffer):
                 return
             (ts, buf) = struct.unpack_from('I 508s', buffer)
-            if 0 != ts:
+            if 0 != ts and ts >= minTimestamp:
                 self.packets.append(Packet(ts, bytearray(buf)))
 
 
 if '__main__' == __name__:
-    minDate = datetime.datetime(2015, 3, 17)
-    maxDate = datetime.datetime(2021, 1, 1)
-
-    first = maxDate
-    last = minDate
-
     with open('data/IEFISBB.DAT', 'rb') as filePointer:
-        packetStream = MglPacketStream(filePointer)
+        packetStream = MglPacketStream(filePointer, 479912852)
     print(packetStream)
     print(packetStream.flights)
 
     for flight in packetStream.flights:
         try:
             flight.analyze()
+        except NotAMessage as e:
+            pass
+        except struct.error as e:
+            pass
         except Exception as e:
             print(e)
         finally:
-            print(flight)
-            for message in flight.messages:
-                print('  ', message)
+            if 0 < len(flight.messages):
+                print(flight)
+                for message in flight.messages:
+                    print('  ', message)
