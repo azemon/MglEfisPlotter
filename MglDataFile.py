@@ -69,8 +69,14 @@ class MessageData(object):
     def cToF(self, c: float) -> float:
         return (c * 9 / 5) + 32
 
+    def litersToGallons(self, liters: float):
+        return liters / 3.785 / 10
+
     def millibarsToHg(self, m: float) -> float:
         return m / 33.864 / 10
+
+    def millibarsToPsi(self, m: float):
+        return m / 68.948 / 10
 
 
 class PrimaryFlight(MessageData):
@@ -249,8 +255,8 @@ class EngineData(MessageData):
 
         format = 'h' * self.numberOfEgt + 'h' * self.numberOfCht
         egtChtTemp = struct.unpack_from(format, buffer, 40)
-        self.egt = [egtChtTemp[i] for i in range(0, self.numberOfEgt * 2, 2)]
-        self.cht = [egtChtTemp[i] for i in range(1, self.numberOfCht * 2 + 1, 2)]
+        self.cht = [egtChtTemp[i] for i in range(0, self.numberOfCht * 2, 2)]
+        self.egt = [egtChtTemp[i] for i in range(1, self.numberOfEgt * 2 + 1, 2)]
 
         self.convertUnits()
 
@@ -260,13 +266,20 @@ class EngineData(MessageData):
         self.coolantTemperature = self.cToF(self.coolantTemperature)
         self.oilTemperature1 = self.cToF(self.oilTemperature1)
         self.oilTemperature2 = self.cToF(self.oilTemperature2)
+
         self.auxTemperature1 = self.cToF(self.auxTemperature1)
         self.auxTemperature2 = self.cToF(self.auxTemperature2)
         self.auxTemperature3 = self.cToF(self.auxTemperature3)
         self.auxTemperature4 = self.cToF(self.auxTemperature4)
+
         self.inletTemperature = self.cToF(self.inletTemperature)
 
         self.manifoldPressure = self.millibarsToHg(self.manifoldPressure)
+
+        self.oilPressure1 = self.millibarsToPsi(self.oilPressure1)
+        self.oilPressure2 = self.millibarsToPsi(self.oilPressure2)
+
+        self.fuelFlow = self.litersToGallons(self.fuelFlow)
 
         for i in range(0, len(self.egt)):
             self.egt[i] = self.cToF(self.egt[i])
