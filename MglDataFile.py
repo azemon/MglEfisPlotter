@@ -69,14 +69,20 @@ class MessageData(object):
     def cToF(self, c: float) -> float:
         return (c * 9 / 5) + 32
 
+    def kphToKnots(self, k: float) -> float:
+        return k / 1.852 / 10
+
     def litersToGallons(self, liters: float):
-        return liters / 3.785 / 10
+        return liters / 3.785 / 100
 
     def millibarsToHg(self, m: float) -> float:
         return m / 33.864 / 10
 
     def millibarsToPsi(self, m: float):
-        return m / 68.948 / 10
+        return m / 68.948
+
+    def __str__(self):
+        return 'data={data!s}...'.format(data=self.rawData[:10])
 
 
 class PrimaryFlight(MessageData):
@@ -120,6 +126,9 @@ class PrimaryFlight(MessageData):
          self.ftHour, self.ftMin, # bb
          ) = struct.unpack('ii HH hh HH hb B bbbbbb bb', buffer)
 
+        self.asi = self.kphToKnots(self.asi)
+        self.tas = self.kphToKnots(self.tas)
+        self.aoa /= 10
         self.baroHg = self.millibarsToHg(self.baro)
         self.oatF = self.cToF(self.oat)
         try:
@@ -127,6 +136,11 @@ class PrimaryFlight(MessageData):
         except ValueError as e:
             self.dateTime = None
             self.exception = e
+
+    def __str__(self):
+        return 'PrimaryFlight {timestamp} altitude={alt:.0f} asi={asi:.0f} vsi={vsi:.0f}'.format(
+            timestamp=self.dateTime, alt=self.pAltitude, asi=self.asi, vsi=self.vsi
+        )
 
 
 class Gps(MessageData):
@@ -169,7 +183,13 @@ class Gps(MessageData):
 
         self.latitudeDegrees = self.latitude / 180 / 1000
         self.longitudeDegrees = self.longitude / 180 / 1000
-        self.groundSpeedKnots = self.groundSpeed * 0.1944
+        self.groundSpeedKnots = self.kphToKnots(self.groundSpeed)
+
+    def __str__(self):
+        return 'GPS lat={lat:.4f} lon={lon:.4f} speed={speed:.0f} alt={alt:.0f} agl={agl:.0f}'.format(
+            lat=self.latitudeDegrees, lon=self.longitudeDegrees, speed=self.groundSpeedKnots,
+            alt=self.gpsAltitude, agl=self.agl
+        )
 
 
 class Attitude(MessageData):
@@ -203,9 +223,15 @@ class Attitude(MessageData):
          self.sensorFlags, # b
          ) = struct.unpack_from('H hhh hh hhh hhh b xxx', buffer)
 
+        self.headingMag /= 10
         self.pitchAngleDegrees = self.pitchAngle / 10
         self.bankAngleDegrees = self.bankAngle / 10
         self.yawAngleDegrees = self.yawAngle / 10
+
+    def __str__(self):
+        return 'Attitude heading={heading:.0f} pitch={pitch:.1f} bank={bank:.1f}'.format(
+            heading=self.headingMag, pitch=self.pitchAngleDegrees, bank=self.bankAngleDegrees
+        )
 
 
 class EngineData(MessageData):
@@ -260,8 +286,6 @@ class EngineData(MessageData):
 
         self.convertUnits()
 
-        return
-
     def convertUnits(self):
         self.coolantTemperature = self.cToF(self.coolantTemperature)
         self.oilTemperature1 = self.cToF(self.oilTemperature1)
@@ -285,6 +309,12 @@ class EngineData(MessageData):
             self.egt[i] = self.cToF(self.egt[i])
         for i in range(0, len(self.cht)):
             self.cht[i] = self.cToF(self.cht[i])
+
+    def __str__(self):
+        return 'EngineData RPM={rpm} OilP={oilp:.0f} OilT={oilt:.0f} MAP={map:.2f} FuelF={fuelf:.1f} EGT={egt!s} CHT={cht!s}'.format(
+            rpm=self.rpm, oilp=self.oilPressure1, oilt=self.oilTemperature1,
+            map=self.manifoldPressure, fuelf=self.fuelFlow, egt=self.egt, cht=self.cht
+        )
 
 
 class Message(object):
@@ -343,13 +373,10 @@ class Message(object):
             raise CrcMismatch(self.totalBytes)
 
     def __str__(self):
-        base = 'Message type {type}'.format(type=self.type)
-        if isinstance(self.messageData, PrimaryFlight):
-            base += ' at ' + str(self.messageData.dateTime)
-        elif isinstance(self.messageData, EngineData):
-            base += ' EGT ' + str(self.messageData.egt)
-            base += ' CHT ' + str(self.messageData.cht)
-        return base
+        if self.messageData.MESSAGETYPE is None:
+            return 'Message type {type}  {msgData!s}'.format(type=self.type, msgData=self.messageData)
+        else:
+            return str(self.messageData)
 
 
 class Flight(object):
