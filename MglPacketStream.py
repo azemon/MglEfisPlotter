@@ -1,49 +1,95 @@
-from typing import BinaryIO
+import struct
+from typing import BinaryIO, List
 
-from Flight import *
-
+from Exceptions import *
 
 class Packet(object):
     timestamp: int
     buffer: bytearray
 
+    position: int
+    eof: bool
+
     def __init__(self, timestamp: int, buffer: bytearray):
         self.timestamp = timestamp
         self.buffer = buffer
+        self.position = 0
+        self.eof = False
+
+    def read(self, qty: int) -> bytearray:
+        if self.eof:
+            raise EndOfPacket()
+        remaining = len(self.buffer) - self.position
+        if qty < remaining:
+            slice = self.buffer[self.position : self.position + qty]
+            self.position += qty
+            return slice
+        else:
+            self.eof = True
+            return self.buffer[self.position : ]
+
 
 
 class MglPacketStream(object):
     filePointer: BinaryIO
     packets: List[Packet]
-    flights: List[Flight]
+    currentPacket: int
+    eof: bool
+    unreadBuffer: bytearray
+    timestamp: int
 
     RECORDSIZE = 512
 
     def __init__(self, fp: BinaryIO, minTimestamp: int = 0):
-        self.filePointer = fp
         self.packets = []
-        self.flights = []
-        self.readPackets(minTimestamp)
-        self.createFlights()
+        self.currentPacket = 0
+        self.eof = False
+        self.unreadBuffer = bytearray()
 
-    def createFlights(self):
-        flight = None
-        for packet in self.packets:
-            if flight is None:
-                flight = Flight(packet.timestamp, packet.buffer)
-            else:
-                try:
-                    flight.addBytes(packet.timestamp, packet.buffer)
-                except NotPartOfFlightException:
-                    self.flights.append(flight)
-                    flight = Flight(packet.timestamp, packet.buffer)
-        self.flights.append(flight)
+        self.filePointer = fp
+        self.loadPackets(minTimestamp)
 
-    def readPackets(self, minTimestamp: int):
+    def loadPackets(self, minTimestamp: int):
         while True:
             buffer = self.filePointer.read(self.RECORDSIZE)
             if 0 == len(buffer):
                 return
-            (ts, buf) = struct.unpack_from('I 508s', buffer)
-            if 0 != ts and ts >= minTimestamp:
-                self.packets.append(Packet(ts, bytearray(buf)))
+            (timestamp, buf) = struct.unpack_from('I 508s', buffer)
+            if 0 != timestamp and timestamp >= minTimestamp:
+                self.packets.append(Packet(timestamp, bytearray(buf)))
+
+    def read(self, qty: int) -> bytearray:
+        if self.eof:
+            raise EndOfFile()
+
+        if 0 < len(self.unreadBuffer):
+            unreadBytes = min(len(self.unreadBuffer), qty)
+            buffer = self.unreadBuffer[:unreadBytes]
+            self.unreadBuffer = self.unreadBuffer[unreadBytes:]
+            if len(buffer) == qty:
+                return buffer
+        else:
+            buffer = bytearray()
+
+        stillNeeded = qty - len(buffer)
+        if self.packets[self.currentPacket].eof:
+            self.nextPacket()
+        buffer.extend(self.packets[self.currentPacket].read(stillNeeded))
+        self.timestamp = self.packets[self.currentPacket].timestamp
+        if len(buffer) == qty:
+            return buffer
+        else:
+            self.nextPacket()
+            stillNeeded = qty - len(buffer)
+            buffer2 = self.read(stillNeeded)
+            buffer.extend(buffer2)
+            return buffer
+
+    def nextPacket(self):
+        self.currentPacket += 1
+        if self.currentPacket >= len(self.packets):
+            self.eof = True
+            raise EndOfFile()
+
+    def unread(self, buffer: bytearray):
+        self.unreadBuffer = buffer

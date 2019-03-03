@@ -19,3 +19,9 @@ class CrcMismatch(NotAMessage):
 class NoMoreMessages(Exception):
     def __init__(self, m=''):
         super().__init__('Not part of flight' + m)
+
+class EndOfFile(Exception):
+    pass
+
+class EndOfPacket(Exception):
+    pass

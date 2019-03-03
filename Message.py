@@ -2,8 +2,11 @@ import binascii
 
 from Exceptions import *
 from MessageData import *
+from MglPacketStream import *
 
 class Message(object):
+    timestamp: int
+
     totalBytes: int
     type: int
     rate: int
@@ -11,19 +14,16 @@ class Message(object):
     version: int
     data: bytearray
     checksum: int
-    rawHeader: bytearray
 
+    rawHeader: bytearray
     messageData: MessageData
 
-    def __init__(self, buffer: bytearray):
-        self.rawHeader = buffer[:8]
+    def __init__(self, timestamp: int, length: int, packetStream: MglPacketStream):
+        self.timestamp = timestamp
 
-        (dle, stx, length, lengthXor) = struct.unpack_from('BBBB', buffer)
-        calculatedLength = lengthXor ^ 0xff
-        if dle != 0x5 or stx != 0x2 or length != calculatedLength:
-            raise NotAMessage()
-        self.totalBytes = 4
-
+        self.totalBytes = 0
+        buffer = packetStream.read(length + 16)
+        self.rawHeader = buffer[:4]
         (self.type, self.rate, self.count, self.version) = \
             struct.unpack_from('BBBB', buffer, self.totalBytes)
         self.totalBytes += 4
@@ -51,14 +51,16 @@ class Message(object):
             self.messageData = MessageData(self.data)
 
     def verifyChecksum(self):
-        buffer = self.rawHeader[4:]
+        buffer = self.rawHeader
         buffer.extend(self.messageData.rawData)
         crc = binascii.crc32(buffer)  # % (1 << 32) # convert to unsigned CRC32
         if crc != self.checksum:
             raise CrcMismatch(self.totalBytes)
 
     def __str__(self):
+        print('{ts}.{count}: '.format(ts=self.timestamp, count=self.count), end='')
         if self.messageData.MESSAGETYPE is None:
-            return 'Message type {type}  {msgData!s}'.format(type=self.type, msgData=self.messageData)
+            # return 'Message type {type}  {msgData!s}'.format(type=self.type, msgData=self.messageData)
+            return 'Message type {type}'.format(type=self.type)
         else:
             return str(self.messageData)
