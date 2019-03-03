@@ -1,7 +1,7 @@
-from Exceptions import NotAMessage
 from Flight import *
 from Message import *
 from MglPacketStream import *
+from TimestampMap import *
 
 
 def findMessage(packetStream: MglPacketStream) -> Message:
@@ -23,14 +23,21 @@ def findMessage(packetStream: MglPacketStream) -> Message:
     return message
 
 
+def buildTimestampMap(flights: List[Flight]) -> Dict[int, datetime.datetime]:
+    timestampMap = TimestampMap()
+    for flight in flights:
+        for message in flight.messages:
+            if isinstance(message.messageData, PrimaryFlight):
+                timestampMap[message.timestamp] = message.messageData.dateTime
+    return timestampMap
 
 
 if '__main__' == __name__:
-    minTimestapm = 479912852
+    minTimestamp = 479912852
     flights = []
 
     with open('data/IEFISBB.DAT', 'rb') as filePointer:
-        packetStream = MglPacketStream(filePointer, minTimestapm)
+        packetStream = MglPacketStream(filePointer, minTimestamp)
 
     flight = None
 
@@ -57,8 +64,10 @@ if '__main__' == __name__:
     except EndOfFile as e:
         pass
 
+    timestampMap = buildTimestampMap(flights)
+
     for flight in flights:
         print(flight)
         for message in flight.messages:
-            print(message)
+            message.print(timestampMap)
         print()

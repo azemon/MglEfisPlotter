@@ -1,4 +1,5 @@
 import binascii
+from typing import Dict
 
 from Exceptions import *
 from MessageData import *
@@ -38,6 +39,12 @@ class Message(object):
 
         self.verifyChecksum()
 
+    def print(self, timeStampMap: Dict[int, datetime.datetime]):
+        if self.messageData.MESSAGETYPE is not None:
+            if self.timestamp in timeStampMap.keys():
+                print(timeStampMap[self.timestamp], end='  ')
+            print(self)
+
     def setMessageData(self):
         if PrimaryFlight.MESSAGETYPE == self.type:
             self.messageData = PrimaryFlight(self.data)
@@ -58,7 +65,6 @@ class Message(object):
             raise CrcMismatch(self.totalBytes)
 
     def __str__(self):
-        print('{ts}.{count}: '.format(ts=self.timestamp, count=self.count), end='')
         if self.messageData.MESSAGETYPE is None:
             # return 'Message type {type}  {msgData!s}'.format(type=self.type, msgData=self.messageData)
             return 'Message type {type}'.format(type=self.type)
