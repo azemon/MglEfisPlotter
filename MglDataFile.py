@@ -3,12 +3,11 @@ from Message import *
 from MglPacketStream import *
 from TimestampMap import *
 
-flights: List[Flight]
-timestampMap: TimestampMap
+def createFlights(datafile: str, minTimestamp: int = 0) -> List[Flight]:
+    flights: List[Flight] = []
 
-def createFlights(packetStream: MglPacketStream):
-    global flights, timestampMap
-    flights = []
+    with open(datafile, 'rb') as filePointer:
+        packetStream = MglPacketStream(filePointer, minTimestamp)
 
     try:
         while True:
@@ -34,20 +33,21 @@ def createFlights(packetStream: MglPacketStream):
     timestampMap = TimestampMap()
     timestampMap.buildFromFlights(flights)
 
-def printFlights():
-    global flights, timestampMap
     for flight in flights:
-        flight.print(timestampMap)
+        flight.timeStampMap = timestampMap
+
+    return flights
+
+def printFlights(flights: List[Flight]):
+    for flight in flights:
+        flight.print()
         for message in flight.messages:
-            message.print(timestampMap, '  ')
+            message.print(flight.timeStampMap, '  ')
         print()
 
 if '__main__' == __name__:
-    minTimestamp = 479912852
     datafile = 'data/IEFISBB.DAT'
+    minTimestamp = 479912852
 
-    with open(datafile, 'rb') as filePointer:
-        packetStream = MglPacketStream(filePointer, minTimestamp)
-
-    createFlights(packetStream)
-    printFlights()
+    flights = createFlights(datafile, minTimestamp)
+    printFlights(flights)

@@ -6,6 +6,7 @@ class Flight(object):
     latestTimestamp: int
 
     messages: List[Message]
+    timeStampMap: Dict
 
     NEWFLIGHTDELTA = 60
 
@@ -20,11 +21,32 @@ class Flight(object):
         self.messages.append(message)
         self.latestTimestamp = message.timestamp
 
-    def print(self, timeStampMap: Dict[int, datetime.datetime]):
-        print('Flight {beginning} to {ending} with {count} messages'.format(
-            beginning=timeStampMap[self.earliestTimestamp], ending=timeStampMap[self.latestTimestamp],
-            count=len(self.messages)))
+    def getAltitudeData(self) -> Dict:
+        dataset = {}
+        for message in self.messages:
+            if isinstance(message.messageData, PrimaryFlight):
+                dataset[message.timestamp] = message.messageData.pAltitude
+        return dataset
+
+    def getRpmData(self) -> Dict:
+        dataset = {}
+        for message in self.messages:
+            if isinstance(message.messageData, EngineData):
+                dataset[message.timestamp] = message.messageData.rpm
+        return dataset
+
+    def getAsi(self) -> Dict:
+        dataset = {}
+        for message in self.messages:
+            if isinstance(message.messageData, PrimaryFlight):
+                dataset[message.timestamp] = message.messageData.asi
+        return dataset
 
     def __str__(self):
+        t = 'Flight {beginning} to {ending}'.format(
+            beginning=self.timeStampMap[self.earliestTimestamp], ending=self.timeStampMap[self.latestTimestamp])
+        return t
+
+    def x__str__(self):
         return 'Flight from {earliest} with {count} messages'.format(earliest=self.earliestTimestamp,
                                                                      count=len(self.messages))
