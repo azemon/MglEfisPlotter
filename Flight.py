@@ -1,5 +1,5 @@
-from Exceptions import *
 from Message import *
+
 
 class Flight(object):
     earliestTimestamp: int
@@ -19,6 +19,11 @@ class Flight(object):
             raise NotPartOfFlightException()
         self.messages.append(message)
         self.latestTimestamp = message.timestamp
+
+    def print(self, timeStampMap: Dict[int, datetime.datetime]):
+        print('Flight {beginning} to {ending} with {count} messages'.format(
+            beginning=timeStampMap[self.earliestTimestamp], ending=timeStampMap[self.latestTimestamp],
+            count=len(self.messages)))
 
     def __str__(self):
         return 'Flight from {earliest} with {count} messages'.format(earliest=self.earliestTimestamp,

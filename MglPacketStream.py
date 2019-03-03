@@ -3,6 +3,7 @@ from typing import BinaryIO, List
 
 from Exceptions import *
 
+
 class Packet(object):
     timestamp: int
     buffer: bytearray

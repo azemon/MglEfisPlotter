@@ -5,6 +5,7 @@ from Exceptions import *
 from MessageData import *
 from MglPacketStream import *
 
+
 class Message(object):
     timestamp: int
 
@@ -39,10 +40,10 @@ class Message(object):
 
         self.verifyChecksum()
 
-    def print(self, timeStampMap: Dict[int, datetime.datetime]):
+    def print(self, timeStampMap: Dict[int, datetime.datetime], prefix: str = ''):
         if self.messageData.MESSAGETYPE is not None:
             if self.timestamp in timeStampMap.keys():
-                print(timeStampMap[self.timestamp], end='  ')
+                print(prefix, timeStampMap[self.timestamp], end='  ')
             print(self)
 
     def setMessageData(self):
@@ -70,3 +71,22 @@ class Message(object):
             return 'Message type {type}'.format(type=self.type)
         else:
             return str(self.messageData)
+
+
+def findMessage(packetStream: MglPacketStream) -> Message:
+    while True:
+        (dle,) = struct.unpack('B', packetStream.read(1))
+        if 0x5 == dle:
+            break
+    (ste,) = struct.unpack('B', packetStream.read(1))
+    if 0x5 == ste:
+        packetStream.unread(ste)
+        return findMessage(packetStream)
+    if 0x2 != ste:
+        return findMessage(packetStream)
+    (length, lengthXor) = struct.unpack('BB', packetStream.read(2))
+    if length != (lengthXor ^ 0xff):
+        return findMessage(packetStream)
+
+    message = Message(packetStream.timestamp, length, packetStream)
+    return message
