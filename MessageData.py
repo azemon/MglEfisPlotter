@@ -123,8 +123,8 @@ class PrimaryFlight(MessageData):
             self.exception = e
 
     def __str__(self):
-        return 'PrimaryFlight {timestamp} altitude={alt:.0f} asi={asi:.0f} vsi={vsi:.0f}'.format(
-            timestamp=self.dateTime, alt=self.pAltitude, asi=self.asi, vsi=self.vsi
+        return 'PrimaryFlight altitude={alt:.0f} ASI={asi:.0f} VSI={vsi:.0f}'.format(
+            alt=self.pAltitude, asi=self.asi, vsi=self.vsi
         )
 
 
