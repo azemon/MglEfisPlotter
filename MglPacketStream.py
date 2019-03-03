@@ -44,7 +44,7 @@ class MglPacketStream(object):
         self.packets = []
         self.currentPacket = 0
         self.eof = False
-        self.unreadBuffer = bytearray()
+        self.unreadBuffer = bytearray(0)
 
         self.filePointer = fp
         self.loadPackets(minTimestamp)
@@ -69,7 +69,7 @@ class MglPacketStream(object):
             if len(buffer) == qty:
                 return buffer
         else:
-            buffer = bytearray()
+            buffer = bytearray(0)
 
         stillNeeded = qty - len(buffer)
         if self.packets[self.currentPacket].eof:
@@ -91,5 +91,6 @@ class MglPacketStream(object):
             self.eof = True
             raise EndOfFile()
 
-    def unread(self, buffer: bytearray):
-        self.unreadBuffer = buffer
+    def unread(self, buffer: int):
+        b = bytearray([buffer])
+        self.unreadBuffer.extend(b)

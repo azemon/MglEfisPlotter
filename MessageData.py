@@ -2,6 +2,8 @@ import datetime
 import struct
 from typing import List
 
+from Exceptions import WrongLength
+
 """
 Functions to convert between Python values and C structs.
 Python bytes objects are used to hold the data representing the C struct
@@ -96,8 +98,7 @@ class PrimaryFlight(MessageData):
 
         bufferLen = len(buffer)
         if 32 < bufferLen:
-            extra = buffer[32:]
-            print('buffer too long')
+            raise WrongLength(bufferLen, 32)
 
         (self.pAltitude, self.bAltitude,  # ii
          self.asi, self.tas,  # HH

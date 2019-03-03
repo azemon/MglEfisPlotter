@@ -43,7 +43,7 @@ if '__main__' == __name__:
                     try:
                         message = findMessage(packetStream)
                         flight.addMessage(message)
-                    except CrcMismatch as e:
+                    except NotAMessage as e:
                         #print(e, message)
                         pass
                     except struct.error as e:
@@ -56,8 +56,6 @@ if '__main__' == __name__:
 
     except EndOfFile as e:
         pass
-    except Exception as e:
-        print('Unknown exception:', e)
 
     for flight in flights:
         print(flight)
