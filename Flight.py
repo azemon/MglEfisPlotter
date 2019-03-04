@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from Message import *
 
 
@@ -21,30 +23,19 @@ class Flight(object):
         self.messages.append(message)
         self.latestTimestamp = message.timestamp
 
-    def getAltitudeData(self) -> Dict:
-        dataset = {}
+    def getData(self, element: str) -> OrderedDict:
+        dataset = OrderedDict()
         for message in self.messages:
-            if isinstance(message.messageData, PrimaryFlight):
-                dataset[message.timestamp] = message.messageData.pAltitude
+            if hasattr(message.messageData, element):
+                dataset[self.timestampToMinutes(message.timestamp)] = message.messageData.__getattribute__(element)
         return dataset
 
-    def getRpmData(self) -> Dict:
-        dataset = {}
-        for message in self.messages:
-            if isinstance(message.messageData, EngineData):
-                dataset[message.timestamp] = message.messageData.rpm
-        return dataset
-
-    def getAsi(self) -> Dict:
-        dataset = {}
-        for message in self.messages:
-            if isinstance(message.messageData, PrimaryFlight):
-                dataset[message.timestamp] = message.messageData.asi
-        return dataset
+    def timestampToMinutes(self, ts: int) -> float:
+        return (ts - self.earliestTimestamp) / 60.0
 
     def __str__(self):
-        t = 'Flight {beginning} to {ending}'.format(
-            beginning=self.timeStampMap[self.earliestTimestamp], ending=self.timeStampMap[self.latestTimestamp])
+        t = 'Flight at {beginning}'.format(
+            beginning=self.timeStampMap[self.earliestTimestamp])
         return t
 
     def x__str__(self):
