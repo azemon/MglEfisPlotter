@@ -30,14 +30,19 @@ class Flight(object):
                 dataset[self.timestampToMinutes(message.timestamp)] = message.messageData.__getattribute__(element)
         return dataset
 
+    def listAttributes(self) -> List:
+        attributes = []
+        for message in self.messages:
+            for attribute, value in message.messageData.__dict__.items():
+                if isinstance(value, (int, float)) and 0 != value and attribute not in attributes:
+                    attributes.append(attribute)
+        attributes.sort()
+        return attributes
+
     def timestampToMinutes(self, ts: int) -> float:
         return (ts - self.earliestTimestamp) / 60.0
 
     def __str__(self):
-        t = 'Flight at {beginning}'.format(
-            beginning=self.timeStampMap[self.earliestTimestamp])
+        t = 'Flight at {beginning}, {qty} messages'.format(
+            beginning=self.timeStampMap[self.earliestTimestamp], qty=len(self.messages))
         return t
-
-    def x__str__(self):
-        return 'Flight from {earliest} with {count} messages'.format(earliest=self.earliestTimestamp,
-                                                                     count=len(self.messages))

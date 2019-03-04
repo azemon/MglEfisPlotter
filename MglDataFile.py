@@ -24,7 +24,7 @@ def createFlights(datafile: str, minTimestamp: int = 0) -> List[Flight]:
                     except struct.error as e:
                         pass
             except NotPartOfFlightException:
-                break
+                pass
             finally:
                 flights.append(flight)
     except EndOfFile as e:
