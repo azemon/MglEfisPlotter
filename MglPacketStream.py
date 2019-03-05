@@ -4,7 +4,7 @@ from typing import BinaryIO, List
 from Exceptions import *
 
 
-class Packet(object):
+class Record(object):
     timestamp: int
     buffer: bytearray
 
@@ -19,7 +19,7 @@ class Packet(object):
 
     def read(self, qty: int) -> bytearray:
         if self.eof:
-            raise EndOfPacket()
+            raise EndOfRecord()
         remaining = len(self.buffer) - self.position
         if qty < remaining:
             slice = self.buffer[self.position : self.position + qty]
@@ -33,8 +33,8 @@ class Packet(object):
 
 class MglPacketStream(object):
     filePointer: BinaryIO
-    packets: List[Packet]
-    currentPacket: int
+    records: List[Record]
+    currentRecord: int
     eof: bool
     unreadBuffer: bytearray
     timestamp: int
@@ -42,22 +42,22 @@ class MglPacketStream(object):
     RECORDSIZE = 512
 
     def __init__(self, fp: BinaryIO, minTimestamp: int = 0):
-        self.packets = []
-        self.currentPacket = 0
+        self.records = []
+        self.currentRecord = 0
         self.eof = False
         self.unreadBuffer = bytearray(0)
 
         self.filePointer = fp
-        self.loadPackets(minTimestamp)
+        self.loadRecords(minTimestamp)
 
-    def loadPackets(self, minTimestamp: int):
+    def loadRecords(self, minTimestamp: int):
         while True:
             buffer = self.filePointer.read(self.RECORDSIZE)
             if 0 == len(buffer):
                 return
             (timestamp, buf) = struct.unpack_from('I 508s', buffer)
             if 0 != timestamp and timestamp >= minTimestamp:
-                self.packets.append(Packet(timestamp, bytearray(buf)))
+                self.records.append(Record(timestamp, bytearray(buf)))
 
     def read(self, qty: int) -> bytearray:
         if self.eof:
@@ -73,22 +73,22 @@ class MglPacketStream(object):
             buffer = bytearray(0)
 
         stillNeeded = qty - len(buffer)
-        if self.packets[self.currentPacket].eof:
-            self.nextPacket()
-        buffer.extend(self.packets[self.currentPacket].read(stillNeeded))
-        self.timestamp = self.packets[self.currentPacket].timestamp
+        if self.records[self.currentRecord].eof:
+            self.nextRecord()
+        buffer.extend(self.records[self.currentRecord].read(stillNeeded))
+        self.timestamp = self.records[self.currentRecord].timestamp
         if len(buffer) == qty:
             return buffer
         else:
-            self.nextPacket()
+            self.nextRecord()
             stillNeeded = qty - len(buffer)
             buffer2 = self.read(stillNeeded)
             buffer.extend(buffer2)
             return buffer
 
-    def nextPacket(self):
-        self.currentPacket += 1
-        if self.currentPacket >= len(self.packets):
+    def nextRecord(self):
+        self.currentRecord += 1
+        if self.currentRecord >= len(self.records):
             self.eof = True
             raise EndOfFile()
 
