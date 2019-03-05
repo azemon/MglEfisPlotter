@@ -47,6 +47,9 @@ class Flight(object):
     def timestampToMinutes(self, ts: int) -> float:
         return (ts - self.earliestTimestamp) / 60.0
 
+    def title(self):
+        return 'Flight at {beginning}'.format(beginning=self.timeStampMap[self.earliestTimestamp])
+
     def __str__(self):
         t = 'Flight from {beginning} to {ending}, {qty:5d} messages, {begin:,} - {end:,}'.format(
             beginning=self.timeStampMap[self.earliestTimestamp],
