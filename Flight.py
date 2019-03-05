@@ -10,7 +10,7 @@ class Flight(object):
     messages: List[Message]
     timeStampMap: Dict
 
-    NEWFLIGHTDELTA = 60
+    NEWFLIGHTDELTA = 300
 
     def __init__(self, message: Message):
         self.earliestTimestamp = message.timestamp
@@ -18,8 +18,12 @@ class Flight(object):
         self.messages = [message]
 
     def addMessage(self, message: Message):
+        if self.earliestTimestamp > message.timestamp:
+            raise NotPartOfFlightException(
+                'too early: {early} > {message}'.format(early=self.earliestTimestamp, message=message.timestamp))
         if message.timestamp > (self.latestTimestamp + self.NEWFLIGHTDELTA):
-            raise NotPartOfFlightException()
+            raise NotPartOfFlightException(
+                'too late: {message} > ({latest} + {delta})'.format(message=message.timestamp, latest=self.latestTimestamp, delta=self.NEWFLIGHTDELTA))
         self.messages.append(message)
         self.latestTimestamp = message.timestamp
 
@@ -44,6 +48,11 @@ class Flight(object):
         return (ts - self.earliestTimestamp) / 60.0
 
     def __str__(self):
-        t = 'Flight at {beginning}, {qty} messages'.format(
-            beginning=self.timeStampMap[self.earliestTimestamp], qty=len(self.messages))
+        t = 'Flight from {beginning} to {ending}, {qty:5d} messages, {begin:,} - {end:,}'.format(
+            beginning=self.timeStampMap[self.earliestTimestamp],
+            ending=self.timeStampMap[self.latestTimestamp],
+            qty=len(self.messages),
+            begin=self.earliestTimestamp,
+            end=self.latestTimestamp,
+        )
         return t

@@ -1,5 +1,5 @@
 import struct
-from typing import BinaryIO, List
+from typing import BinaryIO, List, Set
 
 from Exceptions import *
 
@@ -41,22 +41,29 @@ class MglPacketStream(object):
 
     RECORDSIZE = 512
 
-    def __init__(self, fp: BinaryIO, minTimestamp: int = 0):
+    def __init__(self, fp: BinaryIO, minTimestamp: int = 0, maxTimestamp: int = 9000000000):
         self.records = []
         self.currentRecord = 0
         self.eof = False
         self.unreadBuffer = bytearray(0)
 
         self.filePointer = fp
-        self.loadRecords(minTimestamp)
+        self.loadRecords(minTimestamp, maxTimestamp)
 
-    def loadRecords(self, minTimestamp: int):
+        # print('Record timestamps:')
+        # lastTs = 0
+        # for record in self.records:
+        #     print('  {ts:,}'.format(ts=record.timestamp))
+        #     lastTs = record.timestamp
+        # print('*' * 100)
+
+    def loadRecords(self, minTimestamp: int, maxTimestamp: int):
         while True:
             buffer = self.filePointer.read(self.RECORDSIZE)
             if 0 == len(buffer):
                 return
             (timestamp, buf) = struct.unpack_from('I 508s', buffer)
-            if 0 != timestamp and timestamp >= minTimestamp:
+            if 0 != timestamp and timestamp >= minTimestamp and timestamp <= maxTimestamp:
                 self.records.append(Record(timestamp, bytearray(buf)))
 
     def read(self, qty: int) -> bytearray:

@@ -113,8 +113,8 @@ class PrimaryFlight(MessageData):
         self.asi = self.kphToKnots(self.asi)
         self.tas = self.kphToKnots(self.tas)
         self.aoa /= 10
-        self.baroHg = self.millibarsToHg(self.baro)
-        self.oatF = self.cToF(self.oat)
+        self.baro = self.millibarsToHg(self.baro)
+        self.oat = self.cToF(self.oat)
         try:
             self.dateTime = datetime.datetime(self.year + 2000, self.month, self.date, self.hour, self.minute,
                                               self.second)
@@ -166,9 +166,10 @@ class Gps(MessageData):
          self.raimStatus, self.raimHError, self.raimVError,  # bbb
          ) = struct.unpack_from('ii ii iii HHh bbb bbb bbb x', buffer)
 
-        self.latitudeDegrees = self.latitude / 180 / 1000
-        self.longitudeDegrees = self.longitude / 180 / 1000
-        self.groundSpeedKnots = self.kphToKnots(self.groundSpeed)
+        self.latitude /= 180 / 1000
+        self.longitude /= 180 / 1000
+        self.groundSpeed = self.kphToKnots(self.groundSpeed)
+        self.trueTrack /= 10
 
     def __str__(self):
         return 'GPS lat={lat:.4f} lon={lon:.4f} speed={speed:.0f} alt={alt:.0f} agl={agl:.0f}'.format(
@@ -209,9 +210,9 @@ class Attitude(MessageData):
          ) = struct.unpack_from('H hhh hh hhh hhh b xxx', buffer)
 
         self.headingMag /= 10
-        self.pitchAngleDegrees = self.pitchAngle / 10
-        self.bankAngleDegrees = self.bankAngle / 10
-        self.yawAngleDegrees = self.yawAngle / 10
+        self.pitchAngle /= 10
+        self.bankAngle /= 10
+        self.yawAngle /= 10
 
     def __str__(self):
         return 'Attitude heading={heading:.0f} pitch={pitch:.1f} bank={bank:.1f}'.format(
@@ -283,6 +284,7 @@ class EngineData(MessageData):
 
         self.inletTemperature = self.cToF(self.inletTemperature)
 
+        self.ambientPressure = self.millibarsToHg(self.ambientPressure)
         self.manifoldPressure = self.millibarsToHg(self.manifoldPressure)
 
         self.oilPressure1 = self.millibarsToPsi(self.oilPressure1)

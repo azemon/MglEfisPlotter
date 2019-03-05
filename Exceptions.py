@@ -35,5 +35,5 @@ class EndOfFile(Exception):
     pass
 
 
-class EndOfPacket(Exception):
+class EndOfRecord(Exception):
     pass
