@@ -51,9 +51,9 @@ class Flight(object):
         return 'Flight at {beginning}'.format(beginning=self.timeStampMap[self.earliestTimestamp])
 
     def __str__(self):
-        t = 'Flight from {beginning} to {ending}, {qty:5d} messages, {begin:,} - {end:,}'.format(
+        t = 'Flight at {beginning}-{ending}, {qty:5d} messages, {begin}-{end}'.format(
             beginning=self.timeStampMap[self.earliestTimestamp],
-            ending=self.timeStampMap[self.latestTimestamp],
+            ending=self.timeStampMap[self.latestTimestamp].time(),
             qty=len(self.messages),
             begin=self.earliestTimestamp,
             end=self.latestTimestamp,
