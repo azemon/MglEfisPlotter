@@ -17,7 +17,7 @@ Create a Plot() object and use it to generate gaphs. See `main.py` for an exampl
 ## Display One Line
 ```python
 >>> p = Plot(flights[4])           # create a Plot object from flight #4
->>> p.plot('pAltitutde')           # plot pressure altitude
+>>> p.plot('pAltitude')            # plot pressure altitude
 >>> p.show()                       # display the graph
 ```
 
@@ -43,7 +43,7 @@ Create a Plot() object and use it to generate gaphs. See `main.py` for an exampl
 ## Save Graph as File
 ```
 >>> p = Plot(flights[4])           # create a Plot object from flight #4
->>> p.plot('pAltitutde')           # plot pressure altitude
+>>> p.plot('pAltitude')            # plot pressure altitude
 >>> p.save('mygraph.pdf')          # save graph as a PDF file
 ```
 

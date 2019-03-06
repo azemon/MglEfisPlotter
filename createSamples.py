@@ -7,7 +7,7 @@ maxTimestamp = 1000000000
 flights = createFlights(datafile, minTimestamp, maxTimestamp)
 
 p = Plot(flights[4])
-p.plot('pAltitutde')
+p.plot('pAltitude')
 p.save('samples/pAltitude.png')
 
 p = Plot(flights[4])
