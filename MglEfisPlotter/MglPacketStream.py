@@ -1,7 +1,7 @@
 import struct
 from typing import BinaryIO, List, Set
 
-from Exceptions import *
+from .Exceptions import *
 
 
 class Record(object):

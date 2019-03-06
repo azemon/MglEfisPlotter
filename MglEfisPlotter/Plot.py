@@ -3,7 +3,7 @@ from typing import List
 import matplotlib.pyplot as plt
 from matplotlib import cycler
 
-from Flight import Flight
+from .Flight import Flight
 
 class Plot(object):
     flight: Flight
@@ -28,6 +28,7 @@ class Plot(object):
             if 0 == i:
                 fig, axis0 = plt.subplots()
                 axis = axis0
+                axis0.set_xlabel('Minutes')
             else:
                 axis = axis0.twinx()
 

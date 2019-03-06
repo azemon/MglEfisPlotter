@@ -1,6 +1,6 @@
 from collections import OrderedDict
 
-from Message import *
+from .Message import *
 
 
 class Flight(object):

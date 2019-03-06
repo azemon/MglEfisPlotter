@@ -1,5 +1,4 @@
-from MglDataFile import createFlights
-from Plot import *
+from MglEfisPlotter import *
 
 def printFlights(flights):
     print('Flights:')

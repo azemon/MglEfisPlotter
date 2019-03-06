@@ -1,9 +1,9 @@
 import binascii
 from typing import Dict
 
-from Exceptions import *
-from MessageData import *
-from MglPacketStream import *
+from .Exceptions import *
+from .MessageData import *
+from .MglPacketStream import *
 
 
 class Message(object):

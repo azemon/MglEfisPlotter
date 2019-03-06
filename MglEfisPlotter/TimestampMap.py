@@ -1,4 +1,4 @@
-from Flight import *
+from .Flight import *
 
 class TimestampMap(dict):
     lastValue = None

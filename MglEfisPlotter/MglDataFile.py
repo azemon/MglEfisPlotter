@@ -1,7 +1,7 @@
-from Flight import *
-from Message import *
-from MglPacketStream import *
-from TimestampMap import *
+from .Flight import *
+from .Message import *
+from .MglPacketStream import *
+from .TimestampMap import *
 
 
 def createFlights(datafile: str, minTimestamp: int = 0, maxTimestamp: int = 9000000000) -> List[Flight]:

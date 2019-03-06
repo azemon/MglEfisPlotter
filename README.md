@@ -21,7 +21,7 @@ Create a Plot() object and use it to generate gaphs. See `main.py` for an exampl
 >>> p.show()                       # display the graph
 ```
 
-![](samples/pAltitude.png)
+![altitude](samples/pAltitude.png)
 
 ## Display Two Lines
 ```
@@ -30,15 +30,15 @@ Create a Plot() object and use it to generate gaphs. See `main.py` for an exampl
 >>> p.show()                                       # display the graph
 ```
 
-![](samples/oil.png)
+![oil pressure and tempeerature](samples/oil.png)
 
 ```
->>> p = Plot(flights[4])                   # create a Plot object from flight #4
->>> p.plot2(['headingMag', 'trueTrack'])   # plot heading and true (ground) track
->>> p.show()                               # display the graph
+>>> p = Plot(flights[4])             # create a Plot object from flight #4
+>>> p.plot2(['asi', 'groundSpeed'])  # plot airspeed and groundspeed
+>>> p.show()                         # display the graph
 ```
 
-![](samples/heading.png)
+![airspeed and groundspeed](samples/speed.png)
 
 ## Save Graph as File
 ```
