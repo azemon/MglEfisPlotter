@@ -7,13 +7,13 @@ def printFlights(flights):
         print('{num:2d}: {flight!s}'.format(num=i, flight=flights[i]))
 
 
-
-
 datafile = 'data/IEFISBB.DAT'
 minTimestamp = 429600874
 maxTimestamp = 1000000000
 
 flights = createFlights(datafile, minTimestamp, maxTimestamp)
+
 printFlights(flights)
-p=Plot(flights[-1])
+
+p = Plot(flights[-1])
 print('p is the last flight:', p.flight)

@@ -35,7 +35,7 @@ class Plot(object):
             data = self.flight.getData(attr[i])
             axis.plot(data.keys(), data.values(), color=self.colors[i])
 
-    def savefig(self, fname: str, *args, **kwargs):
+    def save(self, fname: str, *args, **kwargs):
         self._addDecorations()
         plt.savefig(fname, *args, **kwargs)
 
