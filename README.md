@@ -7,7 +7,7 @@ This project reads MGL Avionics `IEFISBB.DAT` files and graphs the data.
 The easiest way to use MglEfisPlotter is within [Jupyter](https://jupyter.org/).
 
 1. Download and install [Jupyter](https://jupyter.org/).
-1. Open the `README.ipynb` notebook.
+1. Open the [README.ipynb](README.ipynb) notebook.
 
 Alternatively, you can use PyCharm. See below for detailed instructions.
 
