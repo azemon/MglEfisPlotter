@@ -21,7 +21,7 @@ Create a Plot() object and use it to generate gaphs. See `main.py` for an exampl
 >>> p.show()                       # display the graph
 ```
 
-![altitude](samples/pAltitude.png)
+![altitude](samples/altitude.png)
 
 ## Display Two Lines
 ```

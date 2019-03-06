@@ -8,7 +8,7 @@ flights = createFlights(datafile, minTimestamp, maxTimestamp)
 
 p = Plot(flights[4])
 p.plot('pAltitude')
-p.save('samples/pAltitude.png')
+p.save('samples/altitude.png')
 
 p = Plot(flights[4])
 p.plot2(['oilPressure1', 'oilTemperature1'])
