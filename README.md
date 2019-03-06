@@ -1,16 +1,31 @@
-# MGL EFIS Data Display
+# MGL EFIS Plotter
 
-Reads MGL Avionics `IEFISBB.DAT` files and graphs the data. 
-Runs inside PyCharm.
+This project reads MGL Avionics `IEFISBB.DAT` files and graphs the data. 
 
 ## Getting Started
 
-1) Download a copy of (PyCharm)[https://www.jetbrains.com/pycharm/]. The free, community edition will do fine.
-1) Create a new "Scientific" project using these files.
-1) Run `main.py`
-1) Create a Plot() object and use it to generate gaphs. See `main.py` for an example of creating a Plot() object. Edit the values of `datafile`, `minTimestamp`, and `maxTimestamp` as required.
+The easiest way to use MglEfisPlotter is within [Jupyter](https://jupyter.org/).
 
-## List All Flights in IEFISSBB.DAT
+1. Download and install [Jupyter](https://jupyter.org/).
+1. Open the `README.ipynb` notebook.
+
+Alternatively, you can use PyCharm. See below for detailed instructions.
+
+## Author
+
+Art Zemon <br>
+art@zemon.name <br>
+https://cheerfulcurmudgeon.com/
+
+## PyCharm Detailed Instructions
+
+1. Download a copy of [PyCharm](https://www.jetbrains.com/pycharm/). The free, community edition will do fine.
+1. Create a new "Scientific" project using these files.
+1. Run `main.py`
+1. Create a Plot() object and use it to generate gaphs. See `main.py` for an example of creating a Plot() object. Edit the values of `datafile`, `minTimestamp`, and `maxTimestamp` as required.
+
+
+### List All Flights in IEFISSBB.DAT
 ```
 >>> printFlights(flights)
 Flights:
@@ -21,7 +36,7 @@ Flights:
  4: Flight from 2019-02-13 14:14:21 to 2019-02-13 14:29:57,  3903 messages, 479,912,852 - 479,913,848
 ```
 
-## Display One Line
+### Display One Line
 ```python
 >>> p = Plot(flights[4])           # create a Plot object from flight #4
 >>> p.plot('pAltitude')            # plot pressure altitude
@@ -47,7 +62,7 @@ Flights:
 
 ![airspeed and groundspeed](samples/speed.png)
 
-## Save Graph as File
+### Save Graph as File
 ```
 >>> p = Plot(flights[4])           # create a Plot object from flight #4
 >>> p.plot('pAltitude')            # plot pressure altitude
@@ -60,7 +75,7 @@ Flights:
 >>> p.save('mygraph.png')          # save graph as a PNG file
 ```
 
-## List All Plottable Attributes
+### List All Plottable Attributes
 ```
 >>> p = Plot(flights[4])           # create a Plot object from flight #4
 >>> p.listAttributes()             # display a list of attributes that can be plottedagl
@@ -68,12 +83,6 @@ ambientPressure
 aoa
 asi
 ...
+vsi
 yawAngle
-year
 ```
-
-## Author
-
-Art Zemon <br>
-art@zemon.name <br>
-https://cheerfulcurmudgeon.com/
