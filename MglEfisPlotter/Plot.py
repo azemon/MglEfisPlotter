@@ -16,17 +16,24 @@ class Plot(object):
     def __init__(self, flight: Flight):
         self.flight = flight
         self.colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
+    
+    def data(self, attr: str):
+        return self.flight.getData(attr)
 
     def listAttributes(self):
         self.flight.listAttributes()
 
     def plot(self, attr: str, label: str = None):
         plt.figure(figsize=self.figsize, dpi=self.dpi)
-        data = self.flight.getData(attr)
+        data = self.data(attr)
         if label is None:
             label = attr
-        plt.plot(data.keys(), data.values(), label=label)
+        plt.plot(data.keys(), data.values())
         plt.ylabel(label, fontsize=self.fontsize)
+            
+        values = list(data.values())
+        if isinstance(values[0], list):
+            self._addLegend(len(values))
 
     def plot2(self, attr: List[str]):
         for i in range(0, len(attr)):
@@ -40,7 +47,7 @@ class Plot(object):
                 axis.spines['right'].set_position(('axes', offset))
 
             axis.set_ylabel(attr[i], color=self.colors[i], fontsize=self.fontsize)
-            data = self.flight.getData(attr[i])
+            data = self.data(attr[i])
             axis.plot(data.keys(), data.values(), color=self.colors[i])
     
     def save(self, fname: str, *args, **kwargs):
@@ -54,3 +61,7 @@ class Plot(object):
     def _addDecorations(self):
         plt.title(self.flight.title())
         plt.xlabel('Minutes', fontsize=self.fontsize)
+    
+    def _addLegend(self, qty: int):
+        labels = ['#{}'.format(n) for n in range(1, qty+1)]
+        plt.legend(labels, loc='best')
