@@ -49,7 +49,7 @@ class Flight(object):
         data = []
         for message in self.messages:
             if hasattr(message.messageData, element):
-                seconds.append(self.timestampToMinutes(message.timestamp))
+                seconds.append(self.timestampToSeconds(message.timestamp))
                 data.append(message.messageData.__getattribute__(element))
         return {
             'seconds': seconds,
@@ -58,6 +58,9 @@ class Flight(object):
 
     def timestampToMinutes(self, ts: int) -> float:
         return (ts - self.earliestTimestamp) / 60.0
+
+    def timestampToSeconds(self, ts: int) -> int:
+        return ts - self.earliestTimestamp
 
     def title(self):
         return 'Flight at {beginning}'.format(beginning=self.timeStampMap[self.earliestTimestamp])
