@@ -43,6 +43,18 @@ class Flight(object):
         attributes.sort()
         for a in attributes:
             print(a)
+    
+    def listData(self, element: str) -> Dict:
+        seconds = []
+        data = []
+        for message in self.messages:
+            if hasattr(message.messageData, element):
+                seconds.append(self.timestampToMinutes(message.timestamp))
+                data.append(message.messageData.__getattribute__(element))
+        return {
+            'seconds': seconds,
+            'data': data,
+        }
 
     def timestampToMinutes(self, ts: int) -> float:
         return (ts - self.earliestTimestamp) / 60.0
