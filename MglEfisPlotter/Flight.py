@@ -45,15 +45,15 @@ class Flight(object):
             print(a)
     
     def listData(self, element: str) -> Dict:
-        seconds = []
+        minutes = []
         data = []
         for message in self.messages:
             if hasattr(message.messageData, element):
-                seconds.append(self.timestampToSeconds(message.timestamp))
+                minutes.append(self.timestampToMinutes(message.timestamp))
                 data.append(message.messageData.__getattribute__(element))
         return {
-            'seconds': seconds,
-            'data': data,
+            'minutes': minutes,
+            element: data,
         }
 
     def timestampToMinutes(self, ts: int) -> float:
