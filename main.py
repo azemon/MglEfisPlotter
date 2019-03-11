@@ -3,7 +3,7 @@ from MglEfisPlotter import *
 def printFlights(flights):
     print('Flights:')
     for i in range(0, len(flights)):
-        print('{num:2d}: {flight!s}'.format(num=i, flight=flights[i]))
+        print('{num:2d}: {flight}'.format(num=i, flight=flights[i]))
 
 
 datafile = 'data/IEFISBB.DAT'

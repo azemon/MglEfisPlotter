@@ -5,6 +5,14 @@ from .TimestampMap import *
 
 
 def createFlights(datafile: str, minTimestamp: int = 0, maxTimestamp: int = 9000000000) -> List[Flight]:
+    """
+    create a list of flights from an IEFISBB.DAT datafile
+    :param datafile:
+    :param minTimestamp:
+    :param maxTimestamp:
+    :return: List[Flight]
+    """
+
     flights: List[Flight] = []
 
     with open(datafile, 'rb') as filePointer:

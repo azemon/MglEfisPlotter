@@ -7,6 +7,9 @@ from .MglPacketStream import *
 
 
 class Message(object):
+    """
+    Message from an MGL EFIS
+    """
     timestamp: int
 
     totalBytes: int
@@ -26,8 +29,7 @@ class Message(object):
         self.totalBytes = 0
         buffer = packetStream.read(length + 16)
         self.rawHeader = buffer[:4]
-        (self.type, self.rate, self.count, self.version) = \
-            struct.unpack_from('BBBB', buffer, self.totalBytes)
+        (self.type, self.rate, self.count, self.version) = struct.unpack_from('BBBB', buffer, self.totalBytes)
         self.totalBytes += 4
 
         length += 8
@@ -40,13 +42,17 @@ class Message(object):
 
         self.verifyChecksum()
 
-    def print(self, timeStampMap: Dict[int, datetime.datetime], prefix: str = ''):
+    def print(self, timeStampMap: Dict[int, datetime.datetime], prefix: str = '') -> None:
         if self.messageData.MESSAGETYPE is not None:
             if self.timestamp in timeStampMap.keys():
                 print(prefix, timeStampMap[self.timestamp], end='  ')
             print(self)
 
-    def setMessageData(self):
+    def setMessageData(self) -> None:
+        """
+        Create the messageData object and parse the data
+        :return:
+        """
         if PrimaryFlight.MESSAGETYPE == self.type:
             self.messageData = PrimaryFlight(self.data)
         elif Gps.MESSAGETYPE == self.type:
@@ -58,7 +64,7 @@ class Message(object):
         else:
             self.messageData = MessageData(self.data)
 
-    def verifyChecksum(self):
+    def verifyChecksum(self) -> None:
         buffer = self.rawHeader
         buffer.extend(self.messageData.rawData)
         crc = binascii.crc32(buffer)  # % (1 << 32) # convert to unsigned CRC32
@@ -74,6 +80,11 @@ class Message(object):
 
 
 def findMessage(packetStream: MglPacketStream) -> Message:
+    """
+    find the next valid message in the packet stream, checking for DLE STX LEN LENXOR
+    :param packetStream:
+    :return: Message
+    """
     while True:
         (dle,) = struct.unpack('B', packetStream.read(1))
         if 0x5 == dle:

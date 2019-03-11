@@ -5,6 +5,10 @@ from .Exceptions import *
 
 
 class Record(object):
+    """
+    one 512 byte record from IEFISBB.DAT
+    """
+
     timestamp: int
     buffer: bytearray
 
@@ -18,6 +22,11 @@ class Record(object):
         self.eof = False
 
     def read(self, qty: int) -> bytearray:
+        """
+        read qty bytes from the record
+        :param qty:
+        :return: bytearray
+        """
         if self.eof:
             raise EndOfRecord()
         remaining = len(self.buffer) - self.position
@@ -30,8 +39,10 @@ class Record(object):
             return self.buffer[self.position : ]
 
 
-
 class MglPacketStream(object):
+    """
+    stream of packets (a/k/a records) sent from the MGL iEFIS and stored in IEFISBB.DAT
+    """
     filePointer: BinaryIO
     records: List[Record]
     currentRecord: int
@@ -57,7 +68,7 @@ class MglPacketStream(object):
         #     lastTs = record.timestamp
         # print('*' * 100)
 
-    def loadRecords(self, minTimestamp: int, maxTimestamp: int):
+    def loadRecords(self, minTimestamp: int, maxTimestamp: int) -> None:
         while True:
             buffer = self.filePointer.read(self.RECORDSIZE)
             if 0 == len(buffer):
@@ -67,6 +78,12 @@ class MglPacketStream(object):
                 self.records.append(Record(timestamp, bytearray(buf)))
 
     def read(self, qty: int) -> bytearray:
+        """
+        read qty bytes from the stream, first checking for unread bytes (had been read and then pushed back ito the
+        stream) and then reading from as many records as necessary
+        :param qty:
+        :return: bytearray
+        """
         if self.eof:
             raise EndOfFile()
 
@@ -93,12 +110,21 @@ class MglPacketStream(object):
             buffer.extend(buffer2)
             return buffer
 
-    def nextRecord(self):
+    def nextRecord(self) -> None:
+        """
+        get another record
+        :return:
+        """
         self.currentRecord += 1
         if self.currentRecord >= len(self.records):
             self.eof = True
             raise EndOfFile()
 
-    def unread(self, buffer: int):
+    def unread(self, buffer: int) -> None:
+        """
+        take back, and store, a few bytes which had been read but were not needed
+        :param buffer:
+        :return:
+        """
         b = bytearray([buffer])
         self.unreadBuffer.extend(b)

@@ -6,6 +6,10 @@ from .Exceptions import WrongLength
 
 
 class MessageData(object):
+    """
+    Base class for the data section of a message, including some unit conversion methods
+    """
+
     MESSAGETYPE = None
 
     rawData: bytearray
@@ -19,7 +23,7 @@ class MessageData(object):
     def kphToKnots(self, k) -> float:
         return k / 1.852 / 10
 
-    def litersToGallons(self, liters):
+    def litersToGallons(self, liters) -> float:
         return liters / 3.785 / 100
 
     def millibarsToHg(self, m) -> float:
@@ -189,6 +193,10 @@ class Attitude(MessageData):
 
 
 class EngineData(MessageData):
+    """
+    engine data with TC inputs hardcoded for N2468Z
+    """
+
     MESSAGETYPE = 10
 
     engineNumber: int
