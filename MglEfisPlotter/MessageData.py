@@ -243,13 +243,11 @@ class EngineData(MessageData):
 
         format = 'h' * self.numberOfEgt + 'h' * self.numberOfCht
         egtChtTemp = struct.unpack_from(format, buffer, 40)
-        if 4 == self.numberOfCht:
+        if 4 == self.numberOfCht and 4 == self.numberOfEgt:
             self.cht = [egtChtTemp[i] for i in range(0, self.numberOfCht * 2, 2)]
-        else:
-            self.cht = []
-        if 4 == self.numberOfEgt:
             self.egt = [egtChtTemp[i] for i in range(1, self.numberOfEgt * 2 + 1, 2)]
         else:
+            self.cht = []
             self.egt = []
 
         self.convertUnits()
