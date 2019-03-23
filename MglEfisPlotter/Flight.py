@@ -14,7 +14,7 @@ class Flight(object):
     messages: List[Message]
     timeStampMap: Dict
 
-    NEWFLIGHTDELTA = 263      # iEFIS seems to add about 260 seconds to the timestamp at the top of the hour
+    NEWFLIGHTDELTA = 300      # iEFIS seems to add about 260 seconds to the timestamp at the top of the hour
 
     def __init__(self, message: Message):
         self.earliestTimestamp = message.timestamp
