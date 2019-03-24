@@ -6,7 +6,7 @@ def printFlights(flights):
         print('{num:2d}: {flight}'.format(num=i, flight=flights[i]))
 
 
-datafile = 'data/IEFISBB.DAT.04'
+datafile = 'data/IEFISBB.DAT'
 minTimestamp = 429600874
 maxTimestamp = 1000000000
 
@@ -17,3 +17,6 @@ printFlights(flights)
 print()
 p = Plot(flights[3])
 print('p =', p.flight)
+
+p.plot('rpm')
+p.show()
