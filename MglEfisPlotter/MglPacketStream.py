@@ -60,6 +60,7 @@ class MglPacketStream(object):
 
         self.filePointer = fp
         self.loadRecords(minTimestamp, maxTimestamp)
+        self.sortRecords()
 
         # print('Record timestamps:')
         # lastTs = 0
@@ -76,6 +77,18 @@ class MglPacketStream(object):
             (timestamp, buf) = struct.unpack_from('I 508s', buffer)
             if 0 != timestamp and timestamp >= minTimestamp and timestamp <= maxTimestamp:
                 self.records.append(Record(timestamp, bytearray(buf)))
+
+    def sortRecords(self) -> None:
+        """
+        Reorder the records so that they are in ascending order, so that nothing else has to deal with a flight
+        which wraps back to the beginning of the file
+        :return:
+        """
+        for boundary in range(0, len(self.records) - 2):
+            if self.records[boundary].timestamp > self.records[boundary+1].timestamp:
+                a = self.records[boundary+1:]
+                b = self.records[:boundary+1]
+                self.records = a + b
 
     def read(self, qty: int) -> bytearray:
         """
