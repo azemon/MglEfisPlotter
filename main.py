@@ -20,3 +20,21 @@ print('p =', p.flight)
 
 p.plot('rpm')
 p.show()
+
+p.plot('cht')
+p.show()
+
+p.plot('egt')
+p.show()
+
+p.plot('oat')
+p.show()
+
+p.plot2(['pAltitude', 'asi'])
+p.show()
+
+p.plot2(['oilPressure1', 'oilTemperature1'])
+p.show()
+
+p.plot2(['vsi', 'pitchAngle'])
+p.show()

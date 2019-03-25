@@ -1,7 +1,6 @@
 import binascii
 from typing import Dict
 
-from .Exceptions import *
 from .MessageData import *
 from .MglPacketStream import *
 

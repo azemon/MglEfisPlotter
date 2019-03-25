@@ -2,6 +2,7 @@ import datetime
 import struct
 from typing import List
 
+from .Config import Config
 from .Exceptions import WrongLength
 
 
@@ -59,8 +60,6 @@ class PrimaryFlight(MessageData):
     ftHour: int
     ftMin: int
 
-    baroHg: float
-    oatF: float
     dateTime: datetime
 
     exception: Exception
@@ -82,11 +81,14 @@ class PrimaryFlight(MessageData):
          self.ftHour, self.ftMin,  # bb
          ) = struct.unpack('ii HH hh HH hb B bbbbbb bb', buffer)
 
-        self.asi = self.kphToKnots(self.asi)
-        self.tas = self.kphToKnots(self.tas)
+        if 'knots' == Config.units['airspeed']:
+            self.asi = self.kphToKnots(self.asi)
+            self.tas = self.kphToKnots(self.tas)
         self.aoa /= 10
-        self.baro = self.millibarsToHg(self.baro)
-        self.oat = self.cToF(self.oat)
+        if 'hg' == Config.units['barometer']:
+            self.baro = self.millibarsToHg(self.baro)
+        if 'f' == Config.units['temperature']:
+            self.oat = self.cToF(self.oat)
         try:
             self.dateTime = datetime.datetime(self.year + 2000, self.month, self.date, self.hour, self.minute,
                                               self.second)
@@ -140,7 +142,8 @@ class Gps(MessageData):
 
         self.latitude /= 180 / 1000
         self.longitude /= 180 / 1000
-        self.groundSpeed = self.kphToKnots(self.groundSpeed)
+        if 'knots' == Config.units['airspeed']:
+            self.groundSpeed = self.kphToKnots(self.groundSpeed)
         self.trueTrack /= 10
 
     def __str__(self):
@@ -222,8 +225,8 @@ class EngineData(MessageData):
     boostPressure: int
     inletTemperature: int
     ambientPressure: int
-    egt: List[int]
-    cht: List[int]
+    egt: List[float]
+    cht: List[float]
 
     def __init__(self, buffer: bytearray):
         super().__init__(buffer)
@@ -241,36 +244,60 @@ class EngineData(MessageData):
          self.inletTemperature, self.ambientPressure,  # hH
          ) = struct.unpack_from(format, buffer)
 
-        format = 'h' * self.numberOfEgt + 'h' * self.numberOfCht
-        egtChtTemp = struct.unpack_from(format, buffer, 40)
-        if 4 == self.numberOfCht and 4 == self.numberOfEgt:
-            self.cht = [egtChtTemp[i] for i in range(0, self.numberOfCht * 2, 2)]
-            self.egt = [egtChtTemp[i] for i in range(1, self.numberOfEgt * 2 + 1, 2)]
-        else:
-            self.cht = []
-            self.egt = []
+        self.unpackThermocouples(buffer)
 
         self.convertUnits()
 
+    def unpackThermocouples(self, buffer):
+        """
+        the RDAC has 12 themocouple inputs but no info on how each is used gets included in the messages.
+        unpack them into arrays of CHT and EGT values.
+        ignore any messages that have an incomplete set of values because we don't know how to parse partial values
+        :param buffer:
+        :return:
+        """
+        qtyAssignedThermocouples = 0
+        for v in Config.thermocouples.values():
+            if v is not None:
+                qtyAssignedThermocouples += 1
+
+        self.cht = []
+        self.egt = []
+        if qtyAssignedThermocouples == (self.numberOfCht + self.numberOfEgt):
+            format = 'h' * self.numberOfEgt + 'h' * self.numberOfCht
+            egtChtTemp = struct.unpack_from(format, buffer, 40)
+
+            for i in range(0, qtyAssignedThermocouples):
+                if 'cht' == Config.thermocouples[i + 1]:
+                    self.cht.append(egtChtTemp[i])
+                elif 'egt' == Config.thermocouples[i + 1]:
+                    self.egt.append(egtChtTemp[i])
+
     def convertUnits(self):
-        self.coolantTemperature = self.cToF(self.coolantTemperature)
-        self.oilTemperature1 = self.cToF(self.oilTemperature1)
-        self.oilTemperature2 = self.cToF(self.oilTemperature2)
+        if 'f' == Config.units['temperature']:
+            self.coolantTemperature = self.cToF(self.coolantTemperature)
+            self.oilTemperature1 = self.cToF(self.oilTemperature1)
+            self.oilTemperature2 = self.cToF(self.oilTemperature2)
 
-        self.auxTemperature1 = self.cToF(self.auxTemperature1)
-        self.auxTemperature2 = self.cToF(self.auxTemperature2)
-        self.auxTemperature3 = self.cToF(self.auxTemperature3)
-        self.auxTemperature4 = self.cToF(self.auxTemperature4)
+            self.auxTemperature1 = self.cToF(self.auxTemperature1)
+            self.auxTemperature2 = self.cToF(self.auxTemperature2)
+            self.auxTemperature3 = self.cToF(self.auxTemperature3)
+            self.auxTemperature4 = self.cToF(self.auxTemperature4)
 
-        self.inletTemperature = self.cToF(self.inletTemperature)
+            self.inletTemperature = self.cToF(self.inletTemperature)
 
-        self.ambientPressure = self.millibarsToHg(self.ambientPressure)
-        self.manifoldPressure = self.millibarsToHg(self.manifoldPressure)
+        if 'hg' == Config.units['barometer']:
+            self.ambientPressure = self.millibarsToHg(self.ambientPressure)
 
-        self.oilPressure1 = self.millibarsToPsi(self.oilPressure1)
-        self.oilPressure2 = self.millibarsToPsi(self.oilPressure2)
+        if 'hg' == Config.units['manifoldPressure']:
+            self.manifoldPressure = self.millibarsToHg(self.manifoldPressure)
 
-        self.fuelFlow = self.litersToGallons(self.fuelFlow)
+        if 'psi' == Config.units['oilPressure']:
+            self.oilPressure1 = self.millibarsToPsi(self.oilPressure1)
+            self.oilPressure2 = self.millibarsToPsi(self.oilPressure2)
+
+        if 'gallons' == Config.units['fuel']:
+            self.fuelFlow = self.litersToGallons(self.fuelFlow)
 
         for i in range(0, len(self.egt)):
             self.egt[i] = self.cToF(self.egt[i])

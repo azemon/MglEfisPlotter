@@ -1,5 +1,6 @@
 from collections import OrderedDict
 
+from .Config import *
 from .Message import *
 
 
@@ -14,7 +15,7 @@ class Flight(object):
     messages: List[Message]
     timeStampMap: Dict
 
-    NEWFLIGHTDELTA = 300      # iEFIS seems to add about 260 seconds to the timestamp at the top of the hour
+    NEWFLIGHTDELTA = Config.NewFlightDelta
 
     def __init__(self, message: Message):
         self.earliestTimestamp = message.timestamp
