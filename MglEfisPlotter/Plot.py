@@ -4,6 +4,7 @@ from typing import List
 import matplotlib.pyplot as plt
 from matplotlib import cycler
 
+from .Config import Config
 from .Flight import Flight
 
 
@@ -14,17 +15,13 @@ class Plot(object):
 
     flight: Flight
     colors: cycler
-        
-    dpi = 100
-    figsize = (12, 8)
-    fontsize = 12
-    
+
     def __init__(self, flight: Flight):
         self.flight = flight
         self.colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
     
     def data(self, attr: str) -> OrderedDict:
-        return self.flight.getData(attr)
+        return self.flight.getPlotData(attr)
 
     def listAttributes(self) -> None:
         self.flight.listAttributes()
@@ -36,12 +33,12 @@ class Plot(object):
         :param label:
         :return:
         """
-        plt.figure(figsize=self.figsize, dpi=self.dpi)
+        plt.figure(figsize=Config.plotDimensions, dpi=Config.plotDPI)
         data = self.data(attr)
         if label is None:
             label = attr
         plt.plot(data.keys(), data.values())
-        plt.ylabel(label, fontsize=self.fontsize)
+        plt.ylabel(label, fontsize=Config.plotFontSize)
             
         values = list(data.values())
         if isinstance(values[0], list):
@@ -55,7 +52,7 @@ class Plot(object):
         """
         for i in range(0, len(attr)):
             if 0 == i:
-                fig, axis0 = plt.subplots(figsize=self.figsize, dpi=self.dpi)
+                fig, axis0 = plt.subplots(figsize=Config.plotDimensions, dpi=Config.plotDPI)
                 axis = axis0
                 axis0.set_xlabel('Minutes')
             else:
@@ -63,7 +60,7 @@ class Plot(object):
                 offset = 1 + ((i - 1) * 0.15)
                 axis.spines['right'].set_position(('axes', offset))
 
-            axis.set_ylabel(attr[i], color=self.colors[i], fontsize=self.fontsize)
+            axis.set_ylabel(attr[i], color=self.colors[i], fontsize=Config.plotFontSize)
             data = self.data(attr[i])
             axis.plot(data.keys(), data.values(), color=self.colors[i])
     
@@ -88,7 +85,7 @@ class Plot(object):
 
     def _addDecorations(self) -> None:
         plt.title(self.flight.title())
-        plt.xlabel('Minutes', fontsize=self.fontsize)
+        plt.xlabel('Minutes', fontsize=Config.plotFontSize)
     
     def _addLegend(self, qty: int):
         labels = ['#{}'.format(n) for n in range(1, qty+1)]

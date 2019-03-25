@@ -1,11 +1,11 @@
-class Config(object):
+class Config:
     units = {
-        'airspeed': 'knots', # 'knots' or 'kph'
-        'barometer': 'hg', # 'hg' or 'millibars'
-        'fuel': 'gallons', # 'gallons' or 'liters'
-        'manifoldPressure': 'hg', # 'hg' or 'millibars'
-        'oilPressure': 'psi', # 'psi' or 'millibars'
-        'temperature': 'f', # 'f' or 'c'
+        'airspeed': 'knots',  # 'knots' or 'kph'
+        'barometer': 'hg',  # 'hg' or 'millibars'
+        'fuel': 'gallons',  # 'gallons' or 'liters'
+        'manifoldPressure': 'hg',  # 'hg' or 'millibars'
+        'oilPressure': 'psi',  # 'psi' or 'millibars'
+        'temperature': 'f',  # 'f' or 'c'
     }
 
     # set each themocouple value to one of 'cht' or 'egt' or None (capitalized and without quotation marks)
@@ -24,6 +24,10 @@ class Config(object):
         11: None,
         12: None,
     }
+
+    plotDimensions = (12, 8)  # width & height in inches
+    plotDPI = 100  # dots per inch
+    plotFontSize = 14
 
     # iEFIS seems to add about 260 seconds to the timestamp at the top of the hour
     NewFlightDelta = 300

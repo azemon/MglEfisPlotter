@@ -1,4 +1,5 @@
 from collections import OrderedDict
+import csv
 
 from .Config import *
 from .Message import *
@@ -40,7 +41,7 @@ class Flight(object):
         self.messages.append(message)
         self.latestTimestamp = message.timestamp
 
-    def getData(self, element: str) -> OrderedDict:
+    def getPlotData(self, element: str) -> OrderedDict:
         """
         returns an OrderedDict of (minutes, datum) for use with Plot.
         Minutes starts at 0 at the beginning of the flight.
@@ -56,18 +57,24 @@ class Flight(object):
 
     def listAttributes(self) -> None:
         """
-        prints a list of datum element names which can be used with getData() and listData()
+        prints a list of datum element names which can be used with getPlotData() and listData()
         :return:
         """
+        attributes = self._getAttributeList()
+        for a in attributes:
+            print(a)
+
+    def _getAttributeList(self) -> List[str]:
         attributes = []
         for message in self.messages:
             for attribute, value in message.messageData.__dict__.items():
                 if isinstance(value, (int, float)) and 0 != value and attribute not in attributes:
                     attributes.append(attribute)
+                elif ('cht' == attribute or 'egt' == attribute) and 0 != len(value) and attribute not in attributes:
+                    attributes.append(attribute)
         attributes.sort()
-        for a in attributes:
-            print(a)
-    
+        return attributes
+
     def listData(self, element: str) -> Dict[str, List]:
         """
         returns a Dict of lists of {minutes, timestamp, datum} for use in a pandas DataFrame.
@@ -89,6 +96,34 @@ class Flight(object):
             'timestamp': timestamp,
             element: data,
         }
+
+    def saveCsv(self, filename: str, elements: List[str] = None) -> None:
+        """
+        save a CSV file containing a list of data elements.
+        :param filename:
+        :param elements: list of elements; defaults to all elements
+        :return:
+        """
+        if elements is None:
+            elements = self._getAttributeList()
+        columns = ['minutes', 'timestamp']
+        columns.extend(elements)
+
+        with open(filename, 'w') as csvfile:
+            csvwriter = csv.writer(csvfile)
+            dictwriter = csv.DictWriter(csvfile, fieldnames=columns)
+            csvwriter.writerow(columns)
+
+            for message in self.messages:
+                row = {}
+                for element in elements:
+                    if hasattr(message.messageData, element):
+                        row[element] = message.messageData.__getattribute__(element)
+
+                if 0 < len(row):
+                    row['minutes'] = self.timestampToMinutes(message.timestamp)
+                    row['timestamp'] = message.timestamp
+                    dictwriter.writerow(row)
 
     def timestampToMinutes(self, ts: int) -> float:
         return (ts - self.earliestTimestamp) / 60.0

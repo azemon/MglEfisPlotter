@@ -1,4 +1,5 @@
 .idea
 *.pyc
 .ipynb_checkpoints/
+csvtest*.csv
 venv/
