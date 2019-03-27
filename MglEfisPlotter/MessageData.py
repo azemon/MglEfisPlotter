@@ -59,6 +59,7 @@ class PrimaryFlight(MessageData):
     year: int
     ftHour: int
     ftMin: int
+    densityAltitude: int
 
     dateTime: datetime
 
@@ -80,6 +81,8 @@ class PrimaryFlight(MessageData):
          self.hour, self.minute, self.second, self.date, self.month, self.year,  # bbbbbb
          self.ftHour, self.ftMin,  # bb
          ) = struct.unpack('ii HH hh HH hb B bbbbbb bb', buffer)
+        
+        self._calculateDensityAltitude()
 
         if 'knots' == Config.units['airspeed']:
             self.asi = self.kphToKnots(self.asi)
@@ -87,6 +90,7 @@ class PrimaryFlight(MessageData):
         self.aoa /= 10
         if 'hg' == Config.units['barometer']:
             self.baro = self.millibarsToHg(self.baro)
+            self.local = self.millibarsToHg(self.local)
         if 'f' == Config.units['temperature']:
             self.oat = self.cToF(self.oat)
         try:
@@ -95,6 +99,14 @@ class PrimaryFlight(MessageData):
         except ValueError as e:
             self.dateTime = None
             self.exception = e
+    
+    def _calculateDensityAltitude(self):
+        """
+        density altitude calculation from:
+        from https://www.flyingmag.com/technique/tip-week/calculating-density-altitude-pencil
+        """
+        iasTemp = ((self.pAltitude / 1000) * 2 - 15) * -1
+        self.densityAltitude = self.pAltitude + (120 * (self.oat - iasTemp))
 
     def __str__(self):
         return 'PrimaryFlight altitude={alt:.0f} ASI={asi:.0f} VSI={vsi:.0f}'.format(
