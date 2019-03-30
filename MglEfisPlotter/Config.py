@@ -5,7 +5,8 @@ class Config:
         'fuel': 'gallons',  # 'gallons' or 'liters'
         'manifoldPressure': 'hg',  # 'hg' or 'millibars'
         'oilPressure': 'psi',  # 'psi' or 'millibars'
-        'temperature': 'c',  # 'f' or 'c'
+        'ambientTemperature': 'c',  # 'f' or 'c'
+        'engineTemperature': 'f',  # 'f' or 'c'
     }
 
     # set each themocouple value to one of 'cht' or 'egt' or None (capitalized and without quotation marks)

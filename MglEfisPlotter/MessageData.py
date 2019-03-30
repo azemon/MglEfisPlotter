@@ -91,7 +91,7 @@ class PrimaryFlight(MessageData):
         if 'hg' == Config.units['barometer']:
             self.baro = self.millibarsToHg(self.baro)
             self.local = self.millibarsToHg(self.local)
-        if 'f' == Config.units['temperature']:
+        if 'f' == Config.units['ambientTemperature']:
             self.oat = self.cToF(self.oat)
         try:
             self.dateTime = datetime.datetime(self.year + 2000, self.month, self.date, self.hour, self.minute,
@@ -286,7 +286,7 @@ class EngineData(MessageData):
                     self.egt.append(egtChtTemp[i])
 
     def convertUnits(self):
-        if 'f' == Config.units['temperature']:
+        if 'f' == Config.units['engineTemperature']:
             self.coolantTemperature = self.cToF(self.coolantTemperature)
             self.oilTemperature1 = self.cToF(self.oilTemperature1)
             self.oilTemperature2 = self.cToF(self.oilTemperature2)
@@ -297,6 +297,11 @@ class EngineData(MessageData):
             self.auxTemperature4 = self.cToF(self.auxTemperature4)
 
             self.inletTemperature = self.cToF(self.inletTemperature)
+
+            for i in range(0, len(self.egt)):
+                self.egt[i] = self.cToF(self.egt[i])
+            for i in range(0, len(self.cht)):
+                self.cht[i] = self.cToF(self.cht[i])
 
         if 'hg' == Config.units['barometer']:
             self.ambientPressure = self.millibarsToHg(self.ambientPressure)
@@ -310,11 +315,6 @@ class EngineData(MessageData):
 
         if 'gallons' == Config.units['fuel']:
             self.fuelFlow = self.litersToGallons(self.fuelFlow)
-
-        for i in range(0, len(self.egt)):
-            self.egt[i] = self.cToF(self.egt[i])
-        for i in range(0, len(self.cht)):
-            self.cht[i] = self.cToF(self.cht[i])
 
     def __str__(self):
         return 'EngineData RPM={rpm} OilP={oilp:.0f} OilT={oilt:.0f} MAP={map:.2f} FuelF={fuelf:.1f} EGT={egt!s} CHT={cht!s}'.format(
