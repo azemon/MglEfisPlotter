@@ -16,9 +16,13 @@ class Flight(object):
     messages: List[Message]
     timeStampMap: Dict
 
+    earliestDateTime: datetime
+
     NEWFLIGHTDELTA = Config.NewFlightDelta
 
     def __init__(self, message: Message):
+        self.earliestDateTime = None
+
         self.earliestTimestamp = message.timestamp
         self.latestTimestamp = message.timestamp
         self.messages = [message]
@@ -71,6 +75,8 @@ class Flight(object):
                 if isinstance(value, (int, float)) and 0 != value and attribute not in attributes:
                     attributes.append(attribute)
                 elif ('cht' == attribute or 'egt' == attribute) and 0 != len(value) and attribute not in attributes:
+                    attributes.append(attribute)
+                elif 'dateTime' == attribute:
                     attributes.append(attribute)
         attributes.sort()
         return attributes
@@ -126,10 +132,14 @@ class Flight(object):
                     dictwriter.writerow(row)
 
     def timestampToMinutes(self, ts: int) -> float:
-        return (ts - self.earliestTimestamp) / 60.0
+        return self.timestampToSeconds(ts) / 60.0
 
     def timestampToSeconds(self, ts: int) -> int:
-        return ts - self.earliestTimestamp
+        if self.earliestDateTime is None:
+            self.earliestDateTime = self.timeStampMap[self.earliestTimestamp]
+        now = self.timeStampMap[ts]
+        t = now - self.earliestDateTime
+        return t.total_seconds()
 
     def title(self) -> str:
         """
