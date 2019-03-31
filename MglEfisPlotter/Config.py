@@ -29,6 +29,7 @@ class Config:
     plotDimensions = (12, 8)  # width & height in inches
     plotDPI = 100  # dots per inch
     plotFontSize = 14
+    rollingWindow = 16  # bigger numbers make smoother graphs; start with 32
 
     # iEFIS seems to add about 260 seconds to the timestamp at the top of the hour
     NewFlightDelta = 300

@@ -3,6 +3,7 @@ from typing import List
 
 import matplotlib.pyplot as plt
 from matplotlib import cycler
+import pandas as pd
 
 from .Config import Config
 from .Flight import Flight
@@ -35,21 +36,31 @@ class Plot(object):
         """
         plt.figure(figsize=Config.plotDimensions, dpi=Config.plotDPI)
         data = self.data(attr)
+        if self._isScalar(data[0]):
+            df = pd.DataFrame(data.values(), columns=[attr])
+            df = df.rolling(Config.rollingWindow, min_periods=1).mean()
+            y = df[attr]
+        else:
+            y = data.values()
         if label is None:
             label = attr
-        plt.plot(data.keys(), data.values())
+        plt.plot(data.keys(), y)
         plt.ylabel(label, fontsize=Config.plotFontSize)
             
         values = list(data.values())
         if isinstance(values[0], list):
             self._addLegend(len(values))
 
-    def plot2(self, attr: List[str]) -> None:
+    def plot2(self, attr: List[str], labels: List[str] = None) -> None:
         """
         Plot several attributes
         :param attr: List of attributes
+        :param labels: List of labels
         :return:
         """
+        if labels is None:
+            labels = attr
+
         for i in range(0, len(attr)):
             if 0 == i:
                 fig, axis0 = plt.subplots(figsize=Config.plotDimensions, dpi=Config.plotDPI)
@@ -60,9 +71,18 @@ class Plot(object):
                 offset = 1 + ((i - 1) * 0.15)
                 axis.spines['right'].set_position(('axes', offset))
 
-            axis.set_ylabel(attr[i], color=self.colors[i], fontsize=Config.plotFontSize)
+            axis.set_ylabel(labels[i], color=self.colors[i], fontsize=Config.plotFontSize)
             data = self.data(attr[i])
-            axis.plot(data.keys(), data.values(), color=self.colors[i])
+            if self._isScalar(data[0]):
+                df = pd.DataFrame(data.values())
+                df = df.rolling(Config.rollingWindow, min_periods=1).mean()
+                y = df.values.tolist()
+            else:
+                y = data.values()
+            axis.plot(data.keys(), y, color=self.colors[i])
+
+    def _isScalar(self, n) -> bool:
+        return not hasattr(n, '__len__')
     
     def save(self, fname: str, *args, **kwargs) -> None:
         """

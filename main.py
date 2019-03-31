@@ -27,12 +27,6 @@ p.show()
 p.plot2(['pAltitude', 'asi'])
 p.show()
 
-p.plot2(['oilPressure1', 'oilTemperature1'])
-p.show()
-
-p.plot2(['vsi', 'pitchAngle'])
-p.show()
-
 p.flight.saveCsv('csvtest.csv', ['pAltitude', 'vs'])
 
 p.flight.saveCsv('csvtestall.csv')
