@@ -27,11 +27,12 @@ class Plot(object):
     def listAttributes(self) -> None:
         self.flight.listAttributes()
 
-    def plot(self, attr: str, label: str = None) -> None:
+    def plot(self, attr: str, label: str = None, **kwargs) -> 'Plot':
         """
         plot one attribute
         :param attr:
         :param label:
+        :param **kwargs: xlim, ylim
         :return:
         """
         plt.figure(figsize=Config.plotDimensions, dpi=Config.plotDPI)
@@ -51,11 +52,23 @@ class Plot(object):
         if isinstance(values[0], list):
             self._addLegend(len(values))
 
-    def plot2(self, attr: List[str], labels: List[str] = None) -> None:
+        if 'xlim' in kwargs.keys():
+            plt.xlim(kwargs['xlim'])
+            del kwargs['xlim']
+        if 'ylim' in kwargs.keys():
+            plt.ylim(kwargs['ylim'])
+            del kwargs['ylim']
+        if 0 < len(kwargs.keys()):
+            raise Exception('Unknown keyword argument: ' + list(kwargs.keys())[0])
+        
+        return self
+
+    def plot2(self, attr: List[str], labels: List[str] = None, **kwargs) -> 'Plot':
         """
         Plot several attributes
         :param attr: List of attributes
         :param labels: List of labels
+        :param **kwargs: xlim, ylim
         :return:
         """
         if labels is None:
@@ -66,6 +79,12 @@ class Plot(object):
                 fig, axis0 = plt.subplots(figsize=Config.plotDimensions, dpi=Config.plotDPI)
                 axis = axis0
                 axis0.set_xlabel('Minutes')
+                if 'xlim' in kwargs.keys():
+                    plt.xlim(kwargs['xlim'])
+                    del kwargs['xlim']
+                if 'ylim' in kwargs.keys():
+                    plt.ylim(kwargs['ylim'])
+                    del kwargs['ylim']
             else:
                 axis = axis0.twinx()
                 offset = 1 + ((i - 1) * 0.15)
@@ -80,6 +99,11 @@ class Plot(object):
             else:
                 y = data.values()
             axis.plot(data.keys(), y, color=self.colors[i])
+
+        if 0 < len(kwargs.keys()):
+            raise Exception('Unknown keyword argument: ' + list(kwargs.keys())[0])
+        
+        return self
 
     def _isScalar(self, n) -> bool:
         return not hasattr(n, '__len__')
