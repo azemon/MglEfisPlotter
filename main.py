@@ -27,6 +27,6 @@ p.show()
 p.plot2(['pAltitude', 'asi'])
 p.show()
 
-p.flight.saveCsv('csvtest.csv', ['pAltitude', 'vs'])
+p.flight.saveCsv('csvtest.csv', ['pAltitude', 'vsi'])
 
 p.flight.saveCsv('csvtestall.csv')

@@ -35,7 +35,7 @@ class Plot(object):
         :param **kwargs: xlim, ylim
         :return:
         """
-        plt.figure(figsize=Config.plotDimensions, dpi=Config.plotDPI)
+        plt.figure(figsize=Config.plotDimensions, dpi=Config.plotDPI, constrained_layout=True)
         data = self.data(attr)
         if self._isScalar(data[0]):
             df = pd.DataFrame(data.values(), columns=[attr])
@@ -76,7 +76,7 @@ class Plot(object):
 
         for i in range(0, len(attr)):
             if 0 == i:
-                fig, axis0 = plt.subplots(figsize=Config.plotDimensions, dpi=Config.plotDPI)
+                fig, axis0 = plt.subplots(figsize=Config.plotDimensions, dpi=Config.plotDPI, constrained_layout=True)
                 axis = axis0
                 axis0.set_xlabel('Minutes')
                 if 'xlim' in kwargs.keys():
@@ -87,7 +87,7 @@ class Plot(object):
                     del kwargs['ylim']
             else:
                 axis = axis0.twinx()
-                offset = 1 + ((i - 1) * 0.15)
+                offset = 1 + ((i - 1) * 0.1)
                 axis.spines['right'].set_position(('axes', offset))
 
             axis.set_ylabel(labels[i], color=self.colors[i], fontsize=Config.plotFontSize)
