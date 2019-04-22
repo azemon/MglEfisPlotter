@@ -1,0 +1,10 @@
+Flight sequence: Last Flight
+Takeoff: 21.04.19 12:17
+Flight time: 01.96
+Pilot number: 1
+Max altitude: 10616ft
+Max airspeed: 157kts
+Max/Min vertical speed: -1670/+1710fpm
+Hobbs1: 0015.65
+Tach1: 0133.09
+Maint1: 024.43
