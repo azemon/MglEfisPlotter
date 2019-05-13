@@ -1,0 +1,319 @@
+Flight sequence: Last Flight
+Takeoff: 12.05.19 16:55
+Flight time: 00.55
+Pilot number: 1
+Max altitude: 4224ft
+Max airspeed: 170kts
+Max/Min vertical speed: -2550/+1720fpm
+Hobbs1: 0018.67
+Tach1: 0134.93
+Maint1: 029.46
+
+Flight sequence: 1
+Takeoff: 12.05.19 16:47
+Flight time: 00.8
+Pilot number: 1
+Max altitude: 1160ft
+Max airspeed: 110kts
+Max/Min vertical speed: -880/+2320fpm
+Hobbs1: 0018.08
+Tach1: 0134.52
+Maint1: 028.48
+
+Flight sequence: 2
+Takeoff: 12.05.19 12:07
+Flight time: 00.35
+Pilot number: 1
+Max altitude: 1755ft
+Max airspeed: 136kts
+Max/Min vertical speed: -1400/+2230fpm
+Hobbs1: 0017.91
+Tach1: 0134.43
+Maint1: 028.20
+
+Flight sequence: 3
+Takeoff: 12.05.19 11:56
+Flight time: 00.8
+Pilot number: 1
+Max altitude: 1309ft
+Max airspeed: 119kts
+Max/Min vertical speed: -1120/+2400fpm
+Hobbs1: 0017.45
+Tach1: 0134.13
+Maint1: 027.43
+
+Flight sequence: 4
+Takeoff: 12.05.19 11:47
+Flight time: 00.8
+Pilot number: 1
+Max altitude: 1273ft
+Max airspeed: 117kts
+Max/Min vertical speed: -870/+2250fpm
+Hobbs1: 0017.33
+Tach1: 0134.06
+Maint1: 027.23
+
+Flight sequence: 5
+Takeoff: 02.05.19 09:06
+Flight time: 00.18
+Pilot number: 1
+Max altitude: 1172ft
+Max airspeed: 124kts
+Max/Min vertical speed: -880/+1660fpm
+Hobbs1: 0017.00
+Tach1: 0133.92
+Maint1: 026.68
+
+Flight sequence: 6
+Takeoff: 28.04.19 16:48
+Flight time: 00.45
+Pilot number: 1
+Max altitude: 3732ft
+Max airspeed: 148kts
+Max/Min vertical speed: -1450/+1940fpm
+Hobbs1: 0016.78
+Tach1: 0133.78
+Maint1: 026.31
+
+Flight sequence: 7
+Takeoff: 28.04.19 16:39
+Flight time: 00.10
+Pilot number: 1
+Max altitude: 1461ft
+Max airspeed: 116kts
+Max/Min vertical speed: -1100/+2030fpm
+Hobbs1: 0016.29
+Tach1: 0133.43
+Maint1: 025.50
+
+Flight sequence: 8
+Takeoff: 28.04.19 16:31
+Flight time: 00.8
+Pilot number: 1
+Max altitude: 1460ft
+Max airspeed: 116kts
+Max/Min vertical speed: -860/+2170fpm
+Hobbs1: 0016.16
+Tach1: 0133.35
+Maint1: 025.28
+
+Flight sequence: 9
+Takeoff: 28.04.19 16:14
+Flight time: 00.10
+Pilot number: 1
+Max altitude: 1411ft
+Max airspeed: 116kts
+Max/Min vertical speed: -920/+1730fpm
+Hobbs1: 0015.95
+Tach1: 0133.23
+Maint1: 024.93
+
+Flight sequence: 10
+Takeoff: 21.04.19 12:17
+Flight time: 01.96
+Pilot number: 1
+Max altitude: 10616ft
+Max airspeed: 157kts
+Max/Min vertical speed: -1670/+1710fpm
+Hobbs1: 0015.65
+Tach1: 0133.09
+Maint1: 024.43
+
+Flight sequence: 11
+Takeoff: 06.04.19 12:11
+Flight time: 01.70
+Pilot number: 1
+Max altitude: 5624ft
+Max airspeed: 142kts
+Max/Min vertical speed: -1360/+1990fpm
+Hobbs1: 0013.43
+Tach1: 0131.52
+Maint1: 020.73
+
+Flight sequence: 12
+Takeoff: 31.03.19 12:11
+Flight time: 00.60
+Pilot number: 1
+Max altitude: 4590ft
+Max airspeed: 152kts
+Max/Min vertical speed: -2280/+2150fpm
+Hobbs1: 0011.58
+Tach1: 0130.17
+Maint1: 017.65
+
+Flight sequence: 13
+Takeoff: 31.03.19 11:20
+Flight time: 00.33
+Pilot number: 1
+Max altitude: 4714ft
+Max airspeed: 133kts
+Max/Min vertical speed: -2510/+2320fpm
+Hobbs1: 0010.97
+Tach1: 0129.75
+Maint1: 016.63
+
+Flight sequence: 14
+Takeoff: 27.03.19 17:59
+Flight time: 00.36
+Pilot number: 1
+Max altitude: 5469ft
+Max airspeed: 156kts
+Max/Min vertical speed: -1420/+1900fpm
+Hobbs1: 0010.44
+Tach1: 0129.43
+Maint1: 015.75
+
+Flight sequence: 15
+Takeoff: 27.03.19 17:19
+Flight time: 00.35
+Pilot number: 1
+Max altitude: 5346ft
+Max airspeed: 141kts
+Max/Min vertical speed: -1050/+1690fpm
+Hobbs1: 0009.93
+Tach1: 0129.09
+Maint1: 014.90
+
+Flight sequence: 16
+Takeoff: 27.03.19 16:52
+Flight time: 00.26
+Pilot number: 1
+Max altitude: 3924ft
+Max airspeed: 132kts
+Max/Min vertical speed: -1210/+1810fpm
+Hobbs1: 0009.50
+Tach1: 0128.81
+Maint1: 014.18
+
+Flight sequence: 17
+Takeoff: 27.03.19 16:21
+Flight time: 00.23
+Pilot number: 1
+Max altitude: 4370ft
+Max airspeed: 141kts
+Max/Min vertical speed: -1650/+1690fpm
+Hobbs1: 0009.14
+Tach1: 0128.58
+Maint1: 013.58
+
+Flight sequence: 18
+Takeoff: 23.03.19 13:56
+Flight time: 00.61
+Pilot number: 1
+Max altitude: 6832ft
+Max airspeed: 162kts
+Max/Min vertical speed: -2610/+2190fpm
+Hobbs1: 0008.76
+Tach1: 0128.36
+Maint1: 012.95
+
+Flight sequence: 19
+Takeoff: 23.03.19 12:54
+Flight time: 00.6
+Pilot number: 1
+Max altitude: 588ft
+Max airspeed: 47kts
+Max/Min vertical speed: -950/+1190fpm
+Hobbs1: 0008.02
+Tach1: 0127.87
+Maint1: 011.71
+
+Flight sequence: 20
+Takeoff: 23.03.19 12:51
+Flight time: 00.3
+Pilot number: 1
+Max altitude: 567ft
+Max airspeed: 39kts
+Max/Min vertical speed: -560/+980fpm
+Hobbs1: 0007.94
+Tach1: 0127.84
+Maint1: 011.58
+
+Flight sequence: 21
+Takeoff: 21.03.19 13:48
+Flight time: 01.38
+Pilot number: 1
+Max altitude: 8764ft
+Max airspeed: 175kts
+Max/Min vertical speed: -3860/+1900fpm
+Hobbs1: 0007.88
+Tach1: 0127.82
+Maint1: 011.48
+
+Flight sequence: 22
+Takeoff: 20.03.19 15:31
+Flight time: 00.31
+Pilot number: 1
+Max altitude: 3705ft
+Max airspeed: 149kts
+Max/Min vertical speed: -1370/+1790fpm
+Hobbs1: 0006.37
+Tach1: 0126.75
+Maint1: 008.96
+
+Flight sequence: 23
+Takeoff: 20.03.19 15:10
+Flight time: 00.8
+Pilot number: 1
+Max altitude: 1475ft
+Max airspeed: 132kts
+Max/Min vertical speed: -1280/+2070fpm
+Hobbs1: 0005.96
+Tach1: 0126.47
+Maint1: 008.28
+
+Flight sequence: 24
+Takeoff: 19.03.19 15:46
+Flight time: 01.38
+Pilot number: 1
+Max altitude: 5573ft
+Max airspeed: 150kts
+Max/Min vertical speed: -2050/+1810fpm
+Hobbs1: 0005.71
+Tach1: 0126.35
+Maint1: 007.86
+
+Flight sequence: 25
+Takeoff: 19.03.19 13:24
+Flight time: 00.61
+Pilot number: 1
+Max altitude: 5385ft
+Max airspeed: 149kts
+Max/Min vertical speed: -1900/+2100fpm
+Hobbs1: 0004.17
+Tach1: 0125.27
+Maint1: 005.30
+
+Flight sequence: 26
+Takeoff: 19.03.19 13:18
+Flight time: 00.1
+Pilot number: 1
+Max altitude: 550ft
+Max airspeed: 72kts
+Max/Min vertical speed: -190/+220fpm
+Hobbs1: 0003.52
+Tach1: 0124.79
+Maint1: 004.21
+
+Flight sequence: 27
+Takeoff: 18.03.19 18:07
+Flight time: 00.1
+Pilot number: 1
+Max altitude: 213ft
+Max airspeed: 45kts
+Max/Min vertical speed: -480/+510fpm
+Hobbs1: 0003.38
+Tach1: 0124.73
+Maint1: 003.98
+
+Flight sequence: 28
+Takeoff: 13.02.19 14:14
+Flight time: 00.25
+Pilot number: 1
+Max altitude: 2448ft
+Max airspeed: 118kts
+Max/Min vertical speed: -1160/+1780fpm
+Hobbs1: 0003.28
+Tach1: 0124.69
+Maint1: 003.81
+
